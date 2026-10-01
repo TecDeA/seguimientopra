@@ -5809,19 +5809,28 @@
     <script>
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
+        // ¿El SW que controla la página es el de ESTA app y no el del
+        // portal (scope raíz)? Evita avisos de actualización falsos.
+        function swControladorPropio() {
+            const c = navigator.serviceWorker.controller;
+            if (!c) return false;
+            try {
+                return new URL(c.scriptURL).pathname.startsWith(new URL('./', location.href).pathname);
+            } catch (e) { return false; }
+        }
         window.addEventListener('load', function() {
             navigator.serviceWorker.register('sw.js')
                 .then(function(registration) {
                     console.log('ServiceWorker registrado con éxito: ', registration.scope);
-                    
+
                     // Forzar actualización del Service Worker inmediatamente
                     registration.update();
-                    
+
                     // Verificar actualizaciones periódicamente
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
                         newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            if (newWorker.state === 'installed' && swControladorPropio()) {
                                 console.log('Nueva versión disponible!');
                                 if (confirm('¡Hay una nueva versión disponible! ¿Recargar para actualizar?')) {
                                     window.location.reload();
