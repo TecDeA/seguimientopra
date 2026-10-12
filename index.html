@@ -1643,6 +1643,51 @@
         </div>
     </div>
 
+    <!-- MODAL: CAMBIAR CONTRASEÑA DE USUARIO (solo administradores) -->
+    <div id="modal-reset-password" class="fixed inset-0 z-50 hidden opacity-0 pointer-events-none modal">
+        <div class="absolute inset-0 bg-black bg-opacity-50" onclick="app.config.closeResetPasswordModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold mb-1 text-gray-800 flex items-center gap-2"><i class="fa-solid fa-key text-amber-500"></i> Cambiar Contraseña</h3>
+            <p class="text-xs text-gray-500 mb-3">Establece una nueva contraseña para:</p>
+            <input type="hidden" id="reset-uid">
+            <div class="flex items-center gap-3 bg-gray-50 border rounded-lg p-3 mb-4">
+                <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-700 font-bold" id="reset-target-initial">?</div>
+                <div class="min-w-0">
+                    <p class="font-bold text-gray-800 truncate" id="reset-target-name">Usuario</p>
+                    <p class="text-sm text-gray-500 truncate">@<span id="reset-target-username">usuario</span></p>
+                </div>
+            </div>
+            <div class="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-3 mb-4 text-xs text-amber-800">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                Si el usuario tiene una sesión abierta, se cerrará automáticamente y deberá iniciar sesión de nuevo con la nueva contraseña. Asegúrate de comunicarle la nueva contraseña.
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold mb-1">Nueva contraseña</label>
+                    <div class="relative">
+                        <input type="password" id="reset-new-pass" autocomplete="new-password" class="w-full border rounded p-2 pr-10 focus:ring-2 focus:ring-amber-500 transition focus:shadow-md" placeholder="Mínimo 6 caracteres">
+                        <button type="button" onclick="app.config._toggleResetPassVisibility()" id="reset-toggle-visibility" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition p-1" title="Mostrar u ocultar la contraseña"><i class="fa-solid fa-eye"></i></button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1">Confirmar nueva contraseña</label>
+                    <div class="relative">
+                        <input type="password" id="reset-new-pass2" autocomplete="new-password" oninput="app.config.checkResetPasswordsMatch()" class="w-full border rounded p-2 pr-10 focus:ring-2 focus:ring-amber-500 transition focus:shadow-md" placeholder="Repite la nueva contraseña">
+                        <i class="fa-solid fa-circle-check absolute right-3 top-1/2 -translate-y-1/2 hidden" id="reset-match-ok"></i>
+                        <i class="fa-solid fa-circle-xmark absolute right-3 top-1/2 -translate-y-1/2 hidden text-red-500" id="reset-match-bad"></i>
+                    </div>
+                    <p class="text-xs mt-1 hidden" id="reset-match-text"></p>
+                </div>
+                <button type="button" onclick="app.config.generateResetPassword()" class="text-xs text-blue-600 hover:text-blue-800 font-semibold transition"><i class="fa-solid fa-dice-five mr-1"></i>Generar una contraseña segura y fácil de dictar</button>
+                <p id="reset-error" class="text-red-600 text-sm hidden"></p>
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="app.config.closeResetPasswordModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition btn-primary ripple">Cancelar</button>
+                    <button type="button" onclick="app.config.saveResetPassword()" id="reset-save-btn" class="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 transition btn-primary ripple hover-lift font-semibold"><i class="fa-solid fa-key mr-1"></i> Cambiar Contraseña</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: MI PERFIL (usuario activo) -->
     <div id="modal-my-profile" class="fixed inset-0 z-50 hidden opacity-0 pointer-events-none modal">
         <div class="absolute inset-0 bg-black bg-opacity-50" onclick="app.auth.closeProfileModal()"></div>
@@ -5121,7 +5166,15 @@
                                 const deletedSnap = await db.ref('deletedUsers/' + user.uid).once('value');
                                 if (deletedSnap.exists()) {
                                     await auth.signOut();
-                                    this._showLoginError('Tu cuenta ha sido eliminada por un administrador. Si necesitas acceso, contacta con un administrador para que cree una cuenta nueva.');
+                                    // Distinguir si la credencial quedó vetada por un
+                                    // cambio de contraseña hecho por un administrador
+                                    // (el usuario debe entrar con la nueva contraseña)
+                                    const veto = deletedSnap.val();
+                                    if (veto && typeof veto === 'object' && veto.reason === 'password-reset') {
+                                        this._showLoginError('Tu contraseña ha sido cambiada por un administrador. Inicia sesión de nuevo con tu usuario y la nueva contraseña.');
+                                    } else {
+                                        this._showLoginError('Tu cuenta ha sido eliminada por un administrador. Si necesitas acceso, contacta con un administrador para que cree una cuenta nueva.');
+                                    }
                                     return;
                                 }
                             } catch(e) {
@@ -5523,7 +5576,11 @@
                         const users = [];
                         if (snap.exists()) {
                             snap.forEach(child => {
-                                users.push({ uid: child.key, ...child.val() });
+                                // Ignorar entradas vacías o corruptas
+                                const val = child.val();
+                                if (val && typeof val === 'object') {
+                                    users.push({ uid: child.key, ...val });
+                                }
                             });
                         }
                         return users;
@@ -5700,6 +5757,82 @@
                         const msg = e && e.code === 'auth/email-already-in-use'
                             ? 'Ya existe una cuenta con ese nombre de usuario'
                             : 'Error al crear usuario: ' + app.auth._authErrorMessage(e);
+                        return { success: false, message: msg };
+                    } finally {
+                        // Cerrar sesión de la instancia secundaria y liberarla
+                        if (secondaryApp) {
+                            try { await secondaryApp.auth().signOut(); } catch(e) {}
+                            try { firebase.deleteApp(secondaryApp); } catch(e) {}
+                        }
+                    }
+                },
+                // Cambia la contraseña de cualquier usuario (solo administradores).
+                // Firebase no permite modificar desde el cliente la contraseña de
+                // otra cuenta, así que se crea una credencial nueva con un email
+                // interno único y se migra el perfil a esa nueva cuenta (de forma
+                // atómica): el login por nombre de usuario pasa a resolver la
+                // credencial nueva, se conservan el rol, el estado y los datos, y
+                // la credencial antigua queda vetada (se cierra su sesión si la
+                // tenía abierta y ya no puede iniciar sesión).
+                resetUserPassword: async function(uid, newPassword) {
+                    if (!this._requireAdmin()) return { success: false, message: 'Permiso denegado' };
+                    if (app.state.currentUser && uid === app.state.currentUser.uid) {
+                        return { success: false, message: 'Para cambiar tu propia contraseña usa "Mi Perfil" en la cabecera' };
+                    }
+                    if (!newPassword || newPassword.length < 6) {
+                        return { success: false, message: 'La contraseña debe tener al menos 6 caracteres' };
+                    }
+
+                    const users = await this.loadUsers();
+                    const target = users.find(u => u.uid === uid);
+                    if (!target) return { success: false, message: 'El usuario ya no existe' };
+
+                    const username = (target.username || 'usuario').toLowerCase();
+                    // Email interno único para la credencial nueva. Se comprueba
+                    // que no coincida con ningún email de acceso existente.
+                    let newEmail = 'reset.' + username + '.' + Date.now() + '@gestionpra.local';
+                    if (users.some(u => (u.email || '').toLowerCase() === newEmail)) {
+                        newEmail = 'reset.' + username + '.' + Date.now() + '.' + Math.random().toString(36).slice(2, 8) + '@gestionpra.local';
+                    }
+
+                    const secondaryAppName = 'password-reset-' + Date.now();
+                    let secondaryApp = null;
+                    try {
+                        secondaryApp = firebase.initializeApp(firebaseConfig, secondaryAppName);
+                        const secondaryAuth = secondaryApp.auth();
+                        const cred = await secondaryAuth.createUserWithEmailAndPassword(newEmail, newPassword);
+                        const newUid = cred.user.uid;
+
+                        // Copiar el perfil completo a la nueva cuenta (conserva rol,
+                        // estado, nombre, etc.) apuntando al email de acceso nuevo.
+                        const profile = { ...target };
+                        delete profile.uid;
+                        profile.email = newEmail;
+                        profile.passwordChangedAt = firebase.database.ServerValue.TIMESTAMP;
+
+                        // Migración atómica: crear el perfil nuevo y retirar el
+                        // antiguo en una sola operación (todo o nada)
+                        const updates = {};
+                        updates['users/' + newUid] = profile;
+                        updates['users/' + uid] = null;
+                        await db.ref().update(updates);
+
+                        // Vetar la credencial antigua para cerrar cualquier sesión
+                        // abierta que pudiera tener el usuario
+                        try {
+                            await db.ref('deletedUsers/' + uid).set({ reason: 'password-reset', at: firebase.database.ServerValue.TIMESTAMP });
+                        } catch(e2) {
+                            // Si las reglas de la base de datos exigen un valor
+                            // simple, registrarlo igual que hace deleteUser()
+                            try { await db.ref('deletedUsers/' + uid).set(firebase.database.ServerValue.TIMESTAMP); } catch(e3) {}
+                        }
+
+                        return { success: true, message: 'Contraseña actualizada para "' + (target.name || username) + '". Comunícale la nueva contraseña.' };
+                    } catch(e) {
+                        console.error('Error cambiando la contraseña:', e);
+                        const msg = e && e.code === 'auth/email-already-in-use'
+                            ? 'No se pudo generar la credencial nueva (email interno en uso). Inténtalo de nuevo.'
+                            : 'Error al cambiar la contraseña: ' + app.auth._authErrorMessage(e);
                         return { success: false, message: msg };
                     } finally {
                         // Cerrar sesión de la instancia secundaria y liberarla
@@ -5976,6 +6109,15 @@
                                     // Editar: disponible para cualquier usuario (con protecciones)
                                     html += '<button onclick="app.config.openEditUserModal(\'' + u.uid + '\')" class="text-blue-500 hover:text-blue-700 transition hover-scale p-1" title="Editar usuario"><i class="fa-solid fa-pen"></i></button>';
 
+                                    // Cambiar contraseña: el propio usuario lo hace desde
+                                    // Mi Perfil; los administradores pueden cambiar la de
+                                    // cualquier otro usuario (con doble confirmación)
+                                    if (isCurrentUser) {
+                                        html += '<button onclick="app.auth.openProfileModal()" class="text-amber-500 hover:text-amber-700 transition hover-scale p-1" title="Cambiar tu contraseña (Mi Perfil)"><i class="fa-solid fa-key"></i></button>';
+                                    } else {
+                                        html += '<button onclick="app.config.openResetPasswordModal(\'' + u.uid + '\')" class="text-amber-500 hover:text-amber-700 transition hover-scale p-1" title="Cambiar contraseña"><i class="fa-solid fa-key"></i></button>';
+                                    }
+
                                     if (!isCurrentUser) {
                                         if (status === 'blocked') {
                                             html += '<button onclick="app.firebase.unblockUser(\'' + u.uid + '\')" class="text-green-500 hover:text-green-700 transition hover-scale p-1" title="Desbloquear"><i class="fa-solid fa-lock-open"></i></button>';
@@ -5997,10 +6139,11 @@
                             html += '<div class="mt-4 flex flex-wrap gap-4 text-xs text-gray-500">';
                             html += '<span><i class="fa-solid fa-crown text-yellow-500 mr-1"></i>Corona: usuario administrador</span>';
                             html += '<span><i class="fa-solid fa-pen text-blue-500 mr-1"></i>Editar: nombre, usuario, rol y estado</span>';
+                            html += '<span><i class="fa-solid fa-key text-amber-500 mr-1"></i>Contraseña: establecer una nueva (doble confirmación)</span>';
                             html += '<span><i class="fa-solid fa-ban text-orange-500 mr-1"></i>Bloquear: Impide acceso al sistema</span>';
                             html += '<span><i class="fa-solid fa-trash text-red-500 mr-1"></i>Eliminar: Borra del sistema</span>';
                             html += '</div>';
-                            html += '<p class="mt-3 text-xs text-gray-400"><i class="fa-solid fa-circle-info mr-1"></i>Cada usuario puede cambiar sus propios datos y contraseña desde <strong>Mi Perfil</strong> (chip de usuario de la cabecera).</p>';
+                            html += '<p class="mt-3 text-xs text-gray-400"><i class="fa-solid fa-circle-info mr-1"></i>Cada usuario puede cambiar sus propios datos y contraseña desde <strong>Mi Perfil</strong> (chip de usuario de la cabecera). Los administradores pueden restablecer la contraseña de cualquier usuario con el botón de la llave.</p>';
 
                             container.innerHTML = html;
                         },
@@ -6082,6 +6225,134 @@
                                 const searchData = row.getAttribute('data-search') || '';
                                 row.style.display = searchData.includes(query) ? '' : 'none';
                             });
+                        },
+                        // --- MODAL: CAMBIAR CONTRASEÑA DE UN USUARIO (admin) ---
+                        // La doble confirmación consta de dos pasos: escribir la
+                        // nueva contraseña dos veces (verificación de coincidencia)
+                        // y un diálogo de confirmación final antes de aplicarla.
+                        openResetPasswordModal: async function(uid) {
+                            if (!app.state.currentUser || app.state.currentUser.role !== 'admin') {
+                                return app.views.notify('Esta operación requiere permisos de administrador', 'error');
+                            }
+                            // El propio admin cambia su contraseña desde Mi Perfil
+                            if (app.state.currentUser && uid === app.state.currentUser.uid) {
+                                app.auth.openProfileModal();
+                                return app.views.notify('Para cambiar tu propia contraseña usa Mi Perfil', 'info');
+                            }
+                            const users = await app.firebase.loadUsers();
+                            const u = users.find(x => x.uid === uid);
+                            if (!u) return app.views.notify('El usuario ya no existe', 'error');
+
+                            document.getElementById('reset-uid').value = u.uid;
+                            document.getElementById('reset-target-name').textContent = u.name || u.username || 'Usuario';
+                            document.getElementById('reset-target-username').textContent = u.username || '-';
+                            document.getElementById('reset-target-initial').textContent = (u.name || u.username || '?').charAt(0).toUpperCase();
+                            document.getElementById('reset-new-pass').value = '';
+                            document.getElementById('reset-new-pass2').value = '';
+                            document.getElementById('reset-new-pass').type = 'password';
+                            document.getElementById('reset-new-pass2').type = 'password';
+                            document.getElementById('reset-toggle-visibility').innerHTML = '<i class="fa-solid fa-eye"></i>';
+                            this.checkResetPasswordsMatch();
+                            const errorEl = document.getElementById('reset-error');
+                            errorEl.classList.add('hidden');
+                            app.utils.openModal('modal-reset-password', this.closeResetPasswordModal);
+                            setTimeout(() => { document.getElementById('reset-new-pass').focus(); }, 150);
+                        },
+                        closeResetPasswordModal: function() {
+                            app.utils.closeModal('modal-reset-password');
+                        },
+                        // Muestra u oculta ambas contraseñas (mismo estado)
+                        _toggleResetPassVisibility: function() {
+                            const p1 = document.getElementById('reset-new-pass');
+                            const p2 = document.getElementById('reset-new-pass2');
+                            const btn = document.getElementById('reset-toggle-visibility');
+                            const show = p1.type === 'password';
+                            p1.type = show ? 'text' : 'password';
+                            p2.type = show ? 'text' : 'password';
+                            btn.innerHTML = show ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+                            btn.title = show ? 'Ocultar la contraseña' : 'Mostrar u ocultar la contraseña';
+                        },
+                        // Indicador en vivo de la coincidencia entre ambos campos
+                        checkResetPasswordsMatch: function() {
+                            const p1 = document.getElementById('reset-new-pass').value;
+                            const p2 = document.getElementById('reset-new-pass2').value;
+                            const ok = document.getElementById('reset-match-ok');
+                            const bad = document.getElementById('reset-match-bad');
+                            const text = document.getElementById('reset-match-text');
+                            ok.classList.add('hidden');
+                            bad.classList.add('hidden');
+                            text.classList.add('hidden');
+                            if (!p2) return;
+                            if (p1 === p2) {
+                                ok.classList.remove('hidden');
+                                text.textContent = 'Las contraseñas coinciden';
+                                text.className = 'text-xs mt-1 text-green-600';
+                                text.classList.remove('hidden');
+                            } else {
+                                bad.classList.remove('hidden');
+                                text.textContent = 'Las contraseñas no coinciden';
+                                text.className = 'text-xs mt-1 text-red-500';
+                                text.classList.remove('hidden');
+                            }
+                        },
+                        // Genera una contraseña legible y fácil de dictar en clase
+                        // (dos palabras cortas y un número: mesa-tigre-42)
+                        generateResetPassword: function() {
+                            const words = ['luna','mesa','tigre','roca','flor','mar','sol','casa','rojo','azul','pez','nube','arbol','piano','gota','vela','rama','toro','cola','faro'];
+                            const pick = () => words[Math.floor(Math.random() * words.length)];
+                            const pass = pick() + '-' + pick() + '-' + (10 + Math.floor(Math.random() * 90));
+                            document.getElementById('reset-new-pass').value = pass;
+                            document.getElementById('reset-new-pass2').value = pass;
+                            this.checkResetPasswordsMatch();
+                        },
+                        saveResetPassword: async function() {
+                            const uid = document.getElementById('reset-uid').value;
+                            const pass1 = document.getElementById('reset-new-pass').value;
+                            const pass2 = document.getElementById('reset-new-pass2').value;
+                            const errorEl = document.getElementById('reset-error');
+                            errorEl.classList.add('hidden');
+
+                            if (!pass1 || !pass2) {
+                                errorEl.textContent = 'Introduce la nueva contraseña en ambos campos';
+                                errorEl.classList.remove('hidden');
+                                return;
+                            }
+                            if (pass1.length < 6) {
+                                errorEl.textContent = 'La contraseña debe tener al menos 6 caracteres';
+                                errorEl.classList.remove('hidden');
+                                return;
+                            }
+                            if (pass1 !== pass2) {
+                                errorEl.textContent = 'Las contraseñas no coinciden: escríbelas de nuevo';
+                                errorEl.classList.remove('hidden');
+                                return;
+                            }
+
+                            // Segunda confirmación: diálogo explícito antes de aplicar
+                            const targetName = document.getElementById('reset-target-name').textContent;
+                            const targetUsername = document.getElementById('reset-target-username').textContent;
+                            if (!confirm('¿Cambiar la contraseña de ' + targetName + ' (@' + targetUsername + ')?\n\nSi tiene una sesión abierta se cerrará, y deberá iniciar sesión con la nueva contraseña. Esta acción no se puede deshacer.')) {
+                                return;
+                            }
+
+                            const btn = document.getElementById('reset-save-btn');
+                            const btnHtml = btn.innerHTML;
+                            btn.disabled = true;
+                            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Cambiando...';
+                            try {
+                                const result = await app.firebase.resetUserPassword(uid, pass1);
+                                if (result.success) {
+                                    this.closeResetPasswordModal();
+                                    app.views.notify(result.message, 'success');
+                                    this.renderUsers();
+                                } else {
+                                    errorEl.textContent = result.message;
+                                    errorEl.classList.remove('hidden');
+                                }
+                            } finally {
+                                btn.disabled = false;
+                                btn.innerHTML = btnHtml;
+                            }
                         },
                         renderCourses: function() {
                             const container = document.getElementById('config-courses-list');
