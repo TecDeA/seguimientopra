@@ -1,7 +1,7 @@
 // Service Worker - Gestión PRA-R
 // La versión de la aplicación se define AQUÍ (única fuente de verdad).
 // El index.html la lee dinámicamente y la muestra en el chip del header.
-const APP_VERSION = '5.8.1';
+const APP_VERSION = '2.8.1';
 
 const CACHE_NAME = 'pra-r-cache-v' + APP_VERSION;
 
