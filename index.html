@@ -412,26 +412,20 @@
                 <p class="text-gray-500 text-sm mt-1">Departamento de Tecnología - IES Virgen de Villadiego</p>
             </div>
             
-            <!-- Login Tab / Register Tab -->
-            <div class="flex border-b mb-6">
-                <button id="tab-login" onclick="app.auth.showLoginTab()" class="flex-1 py-2 text-center font-semibold text-blue-600 border-b-2 border-blue-600 transition">Iniciar Sesión</button>
-                <button id="tab-register" onclick="app.auth.showRegisterTab()" class="flex-1 py-2 text-center font-semibold text-gray-400 border-b-2 border-transparent transition">Registrarse</button>
-            </div>
-            
             <!-- Login Form -->
             <div id="form-login">
                 <div class="mb-4">
                     <label class="block text-sm font-bold text-gray-700 mb-1">Usuario</label>
                     <div class="relative">
                         <i class="fa-solid fa-user absolute left-3 top-3 text-gray-400"></i>
-                        <input type="text" id="login-username" class="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tu nombre de usuario">
+                        <input type="text" id="login-username" autocomplete="username" class="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tu nombre de usuario">
                     </div>
                 </div>
                 <div class="mb-6">
                     <label class="block text-sm font-bold text-gray-700 mb-1">Contraseña</label>
                     <div class="relative">
                         <i class="fa-solid fa-lock absolute left-3 top-3 text-gray-400"></i>
-                        <input type="password" id="login-password" class="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tu contraseña">
+                        <input type="password" id="login-password" autocomplete="current-password" class="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tu contraseña">
                     </div>
                 </div>
                 <button onclick="app.auth.login()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition btn-primary ripple hover-lift">
@@ -439,37 +433,8 @@
                 </button>
                 <p id="login-error" class="text-red-500 text-sm text-center mt-3 hidden"></p>
             </div>
-            
-            <!-- Register Form (hidden by default) -->
-            <div id="form-register" class="hidden">
-                <div class="mb-4">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Nombre completo</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-id-badge absolute left-3 top-3 text-gray-400"></i>
-                        <input type="text" id="register-name" class="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tu nombre">
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Usuario</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-user absolute left-3 top-3 text-gray-400"></i>
-                        <input type="text" id="register-username" class="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nombre de usuario">
-                    </div>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Contraseña</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-lock absolute left-3 top-3 text-gray-400"></i>
-                        <input type="password" id="register-password" class="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Mínimo 6 caracteres">
-                    </div>
-                </div>
-                <button onclick="app.auth.register()" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition btn-primary ripple hover-lift">
-                    <i class="fa-solid fa-user-plus mr-2"></i> Crear Cuenta
-                </button>
-                <p id="register-error" class="text-red-500 text-sm text-center mt-3 hidden"></p>
-            </div>
-            
-            <p class="text-center text-xs text-gray-400 mt-6">Los datos se guardan en Firebase · El primer usuario registrado será administrador · Si no queda ningún administrador, quien inicie sesión recibirá permisos de administrador automáticamente</p>
+
+            <p class="text-center text-xs text-gray-400 mt-6"><i class="fa-solid fa-circle-info mr-1"></i>Los datos se guardan en Firebase · Las cuentas solo pueden ser creadas por un administrador desde <strong>Configuración → Gestión de Usuarios</strong></p>
         </div>
     </div>
 
@@ -772,7 +737,7 @@
                             <!-- Opción A: Exportar curso individual -->
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
                                 <div class="flex items-center gap-2 mb-2">
-                                    <input type="radio" name="export-mode" id="export-mode-course" value="course" checked class="w-4 h-4 text-blue-600" onchange="app.data.toggleExportMode()">
+                                    <input type="radio" name="export-mode" id="export-mode-course" value="course" checked class="w-4 h-4 text-blue-600">
                                     <label for="export-mode-course" class="font-semibold text-blue-800 cursor-pointer">Exportar un curso escolar</label>
                                 </div>
                                 <p class="text-sm text-gray-600 mb-3 ml-6">Descarga los datos de alumnos de un curso concreto.</p>
@@ -789,7 +754,7 @@
                             <!-- Opción B: Exportar toda la BD -->
                             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                                 <div class="flex items-center gap-2 mb-2">
-                                    <input type="radio" name="export-mode" id="export-mode-full" value="full" class="w-4 h-4 text-green-600" onchange="app.data.toggleExportMode()">
+                                    <input type="radio" name="export-mode" id="export-mode-full" value="full" class="w-4 h-4 text-green-600">
                                     <label for="export-mode-full" class="font-semibold text-green-800 cursor-pointer">Exportar toda la base de datos</label>
                                 </div>
                                 <p class="text-sm text-gray-600 mb-3 ml-6">Descarga todos los cursos escolares con sus alumnos en un único archivo.</p>
@@ -1635,6 +1600,81 @@
         </div>
     </div>
 
+    <!-- MODAL: EDITAR USUARIO (solo administradores) -->
+    <div id="modal-edit-user" class="fixed inset-0 z-50 hidden opacity-0 pointer-events-none modal">
+        <div class="absolute inset-0 bg-black bg-opacity-50" onclick="app.config.closeEditUserModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold mb-1 text-gray-800 flex items-center gap-2"><i class="fa-solid fa-user-gear text-blue-600"></i> Editar Usuario</h3>
+            <p class="text-xs text-gray-500 mb-4">Modifica el perfil, el rol o el estado de la cuenta.</p>
+            <input type="hidden" id="edit-user-uid">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold mb-1">Nombre completo</label>
+                    <input type="text" id="edit-user-name" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 transition focus:shadow-md" placeholder="Ej: María López">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1">Usuario (login)</label>
+                    <input type="text" id="edit-user-username" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 transition focus:shadow-md" placeholder="Ej: mlopez">
+                    <p class="text-xs text-gray-400 mt-1">Solo letras minúsculas, números, puntos, guiones y guiones bajos.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Rol</label>
+                        <select id="edit-user-role" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 transition">
+                            <option value="user">Usuario</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Estado</label>
+                        <select id="edit-user-status" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 transition">
+                            <option value="active">Activo</option>
+                            <option value="blocked">Bloqueado</option>
+                            <option value="pending">Pendiente</option>
+                        </select>
+                    </div>
+                </div>
+                <p id="edit-user-error" class="text-red-600 text-sm hidden"></p>
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="app.config.closeEditUserModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition btn-primary ripple">Cancelar</button>
+                    <button type="button" onclick="app.config.saveUserEdit()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition btn-primary ripple hover-lift"><i class="fa-solid fa-floppy-disk mr-1"></i> Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: MI PERFIL (usuario activo) -->
+    <div id="modal-my-profile" class="fixed inset-0 z-50 hidden opacity-0 pointer-events-none modal">
+        <div class="absolute inset-0 bg-black bg-opacity-50" onclick="app.auth.closeProfileModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold mb-1 text-gray-800 flex items-center gap-2"><i class="fa-solid fa-id-badge text-blue-600"></i> Mi Perfil</h3>
+            <p class="text-xs text-gray-500 mb-4">Actualiza tus datos personales y tu contraseña.</p>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold mb-1">Nombre completo</label>
+                    <input type="text" id="profile-name" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 transition focus:shadow-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1">Usuario (login)</label>
+                    <input type="text" id="profile-username" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 transition focus:shadow-md">
+                </div>
+                <div class="bg-gray-50 border rounded-lg p-3">
+                    <p class="text-sm font-bold mb-2"><i class="fa-solid fa-key text-yellow-500 mr-1"></i> Cambiar mi contraseña</p>
+                    <div class="space-y-2">
+                        <input type="password" id="profile-new-pass" autocomplete="new-password" class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500" placeholder="Nueva contraseña (déjalo vacío para no cambiarla)">
+                        <input type="password" id="profile-new-pass2" autocomplete="new-password" class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500" placeholder="Repite la nueva contraseña">
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">Mínimo 6 caracteres. Si el cambio falla, cierra sesión, vuelve a entrar e inténtalo de nuevo.</p>
+                </div>
+                <p id="profile-error" class="text-red-600 text-sm hidden"></p>
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" onclick="app.auth.closeProfileModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition btn-primary ripple">Cancelar</button>
+                    <button type="button" onclick="app.auth.saveProfile()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition btn-primary ripple hover-lift"><i class="fa-solid fa-floppy-disk mr-1"></i> Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- BASE DE DATOS DE CRITERIOS (COMPLETA - LOMLOE ANDALUCÍA) ---
         const criteriaDB = {
@@ -1760,25 +1800,52 @@
                     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, '');
                 },
                 
-                // NUEVA FUNCIÓN: Formatear fecha y hora como DDMMAAAA_HHMM
-                formatDateTime: function(date = new Date()) {
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses van de 0-11
-                    const year = date.getFullYear();
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    
-                    return `${day}${month}${year}_${hours}${minutes}`;
+                escapeHTML: function(str) {
+                    if (str === undefined || str === null) return '';
+                    // Escapa <, >, &, comillas simples y dobles (seguro también
+                    // dentro de atributos HTML como data-* o title)
+                    return String(str)
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
                 },
-                
-                // NUEVA FUNCIÓN: Formatear fecha y hora como DD-MM-AAAA_HHhMMm
+
+                // Valida el formato de un nombre de usuario (login)
+                isValidUsername: function(username) {
+                    return /^[a-z0-9_.-]+$/.test(username);
+                },
+
+                // Normaliza la estructura de un alumno cargado de Firebase,
+                // localStorage o un JSON importado, garantizando que existan
+                // todos los campos que utiliza la aplicación.
+                normalizeStudent: function(s) {
+                    if (!s || typeof s !== 'object') return null;
+                    return {
+                        id: s.id || ('stu_' + Date.now() + Math.floor(Math.random() * 1000)),
+                        name: s.name || '',
+                        group: s.group || '',
+                        subjects: { cyr: (s.subjects && s.subjects.cyr) || '', tyd: (s.subjects && s.subjects.tyd) || '' },
+                        passedCriteria: s.passedCriteria || {},
+                        activities: Array.isArray(s.activities) ? s.activities : []
+                    };
+                },
+
+                // Devuelve las materias asignadas de un alumno de forma segura
+                // (evita errores con datos antiguos sin el campo subjects)
+                studentSubjects: function(student) {
+                    const subs = (student && student.subjects) || {};
+                    return [subs.cyr, subs.tyd].filter(Boolean);
+                },
+
+                // Formatear fecha y hora como DD-MM-AAAA_HHhMMm (nombres de archivo)
                 formatDateTimeReadable: function(date = new Date()) {
                     const day = String(date.getDate()).padStart(2, '0');
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const year = date.getFullYear();
                     const hours = String(date.getHours()).padStart(2, '0');
                     const minutes = String(date.getMinutes()).padStart(2, '0');
-                    
                     return `${day}-${month}-${year}_${hours}h${minutes}m`;
                 },
 
@@ -1826,10 +1893,10 @@
             },
 
             init: function() {
-                // Seguridad: asegurar que students sea siempre un array
-                if (!Array.isArray(app.state.students)) {
-                    app.state.students = [];
-                }
+                // Seguridad: asegurar que students sea siempre un array normalizado
+                app.state.students = (Array.isArray(app.state.students) ? app.state.students : [])
+                    .map(app.utils.normalizeStudent)
+                    .filter(Boolean);
                 // loadLocal solo como respaldo si Firebase NO cargó datos.
                 // loadCourseData() ya sincronizó localStorage si tuvo éxito,
                 // pero si students sigue vacío podría ser offline, así que cargamos.
@@ -1845,10 +1912,6 @@
                     }
                     if (prevCurrentCourse) {
                         app.state.currentCourse = prevCurrentCourse;
-                    }
-                    // Volver a asegurar que sea array tras loadLocal
-                    if (!Array.isArray(app.state.students)) {
-                        app.state.students = [];
                     }
                 }
                 this.router.init();
@@ -2050,7 +2113,7 @@
                 notify: function(msg, type='info') {
                     const area = document.getElementById('notification-area');
                     const div = document.createElement('div');
-                    const colorClass = type === 'error' ? 'bg-red-500' : (type === 'success' ? 'bg-green-500' : 'bg-blue-600');
+                    const colorClass = type === 'error' ? 'bg-red-500' : (type === 'success' ? 'bg-green-500' : (type === 'warning' ? 'bg-amber-500' : 'bg-blue-600'));
                     div.className = `${colorClass} text-white px-4 py-3 rounded shadow-lg text-sm font-semibold flex items-center gap-2 transform transition-all duration-300 translate-x-full fade-in-element`;
                     const iconMap = { error: 'fa-circle-exclamation', success: 'fa-check-circle', warning: 'fa-triangle-exclamation', info: 'fa-circle-info' };
                     div.innerHTML = `<i class="fa-solid ${iconMap[type] || iconMap.info}"></i> ${app.utils.escapeHTML(msg)}`;
@@ -2063,20 +2126,17 @@
                     }, 3000);
                 },
                 
-                // Función para el acordeón
-                toggleAccordion: function(id) {
-                    const content = document.getElementById(id);
-                    const chevron = document.getElementById(id.replace('content', 'chevron'));
-                    
+                // Abre o cierra con animación un acordeón (helper compartido,
+                // antes duplicado en toggleAccordion y toggleReportAccordion)
+                _animateAccordion: function(content, chevron) {
+                    if (!content || !chevron) return;
                     if (content.classList.contains('hidden')) {
                         // Abrir acordeón
                         content.classList.remove('hidden');
                         chevron.classList.remove('fa-chevron-right');
                         chevron.classList.add('fa-chevron-down');
                         content.style.maxHeight = content.scrollHeight + 'px';
-                        setTimeout(() => {
-                            content.style.maxHeight = 'none';
-                        }, 300);
+                        setTimeout(() => { content.style.maxHeight = 'none'; }, 300);
                     } else {
                         // Cerrar acordeón
                         content.style.maxHeight = content.scrollHeight + 'px';
@@ -2091,6 +2151,13 @@
                     }
                 },
 
+                // Función para el acordeón
+                toggleAccordion: function(id) {
+                    const content = document.getElementById(id);
+                    const chevron = document.getElementById(id.replace('content', 'chevron'));
+                    this._animateAccordion(content, chevron);
+                },
+
                 // IDs de los acordeones de informes para exclusión mutua
                 _reportAccordionIds: ['reports-individual-content', 'reports-group-content', 'reports-pra-content', 'reports-calendar-content'],
 
@@ -2099,44 +2166,16 @@
                     this._reportAccordionIds.forEach(accId => {
                         if (accId === id) return;
                         const content = document.getElementById(accId);
-                        const chevId = accId.replace('-content', '-chevron');
-                        const chevron = document.getElementById(chevId);
+                        const chevron = document.getElementById(accId.replace('-content', '-chevron'));
                         if (content && !content.classList.contains('hidden')) {
-                            content.style.maxHeight = content.scrollHeight + 'px';
-                            requestAnimationFrame(() => {
-                                content.style.maxHeight = '0';
-                                setTimeout(() => {
-                                    content.classList.add('hidden');
-                                    chevron.classList.remove('fa-chevron-down');
-                                    chevron.classList.add('fa-chevron-right');
-                                }, 300);
-                            });
+                            this._animateAccordion(content, chevron);
                         }
                     });
 
                     // Luego abrir/cerrar el seleccionado
                     const content = document.getElementById(id);
                     const chevron = document.getElementById(chevronId);
-
-                    if (content.classList.contains('hidden')) {
-                        content.classList.remove('hidden');
-                        chevron.classList.remove('fa-chevron-right');
-                        chevron.classList.add('fa-chevron-down');
-                        content.style.maxHeight = content.scrollHeight + 'px';
-                        setTimeout(() => {
-                            content.style.maxHeight = 'none';
-                        }, 300);
-                    } else {
-                        content.style.maxHeight = content.scrollHeight + 'px';
-                        requestAnimationFrame(() => {
-                            content.style.maxHeight = '0';
-                            setTimeout(() => {
-                                content.classList.add('hidden');
-                                chevron.classList.remove('fa-chevron-down');
-                                chevron.classList.add('fa-chevron-right');
-                            }, 300);
-                        });
-                    }
+                    this._animateAccordion(content, chevron);
                 }
             },
 
@@ -2164,18 +2203,15 @@
                         try {
                             const loaded = JSON.parse(raw);
                             // Solo cargar datos de alumnos y cursos, NUNCA sobreescribir auth
-                            if (loaded.students) app.state.students = loaded.students;
+                            if (loaded.students) {
+                                app.state.students = (Array.isArray(loaded.students) ? loaded.students : [])
+                                    .map(app.utils.normalizeStudent)
+                                    .filter(Boolean);
+                            }
                             if (loaded.courses) app.state.courses = loaded.courses;
                             if (loaded.currentCourse) app.state.currentCourse = loaded.currentCourse;
                         } catch(e) { console.error("Error loading local data"); }
                     }
-                },
-                exportJSON: function() {
-                    // Función legacy: mantiene compatibilidad con llamadas antiguas
-                    this.exportCourseJSON(app.state.currentCourse || app.firebase.getDefaultCourse());
-                },
-                toggleExportMode: function() {
-                    // No necesita hacer nada especial, solo gestiona el radio visual
                 },
                 populateExportCourseSelect: async function() {
                     const select = document.getElementById('export-course-select');
@@ -2395,6 +2431,9 @@
                                 return app.views.notify('El archivo no contiene datos de alumnos válidos', 'error');
                             }
                             
+                            // Normalizar estructura de los alumnos importados
+                            students = students.map(app.utils.normalizeStudent).filter(Boolean);
+                            
                             // Si el archivo indica un curso diferente al activo, ofrecer opciones
                             const currentCourse = app.state.currentCourse || app.firebase.getDefaultCourse();
                             if (courseYear !== currentCourse) {
@@ -2463,10 +2502,11 @@
                         });
                         
                         // 1. Agregar notas de passedCriteria (criterios ya aprobados)
-                        for (let code in student.passedCriteria) {
+                        const passedCriteria = student.passedCriteria || {};
+                        for (let code in passedCriteria) {
                             if (code.startsWith(subjectCode.substring(0,3))) {
                                 if (critGrades[code]) {
-                                    critGrades[code].passedGrade = student.passedCriteria[code];
+                                    critGrades[code].passedGrade = passedCriteria[code];
                                     critGrades[code].hasPassed = true;
                                 }
                             }
@@ -2540,6 +2580,14 @@
                 
                 // --- GESTIÓN DE ALUMNADO ---
                 students: {
+                    // Guarda cambios de alumnos (local + nube), refresca listados
+                    // y notifica. Evita repetir la misma secuencia en cada operación.
+                    _persistStudents: function(msg, type) {
+                        app.data.saveLocal();
+                        app.views.updateStudentList();
+                        if (msg) app.views.notify(msg, type || 'success');
+                    },
+
                     createStudent: function(nameStr, groupStr = "") {
                         const id = 'stu_' + Date.now() + Math.floor(Math.random()*1000);
                         app.state.students.push({
@@ -2563,9 +2611,7 @@
                         this.createStudent(val, group);
                         input.value = '';
                         groupInput.value = '';
-                        app.views.updateStudentList();
-                        app.data.saveLocal();
-                        app.views.notify("Alumno añadido", "success");
+                        this._persistStudents("Alumno añadido");
                     },
                     
                     addBatch: function() {
@@ -2600,9 +2646,7 @@
                         });
                         
                         document.getElementById('input-student-batch').value = '';
-                        app.views.updateStudentList();
-                        app.data.saveLocal();
-                        app.views.notify(`${count} alumnos importados`, "success");
+                        this._persistStudents(`${count} alumnos importados`);
                     },
                     
                     importExcel: function(input) {
@@ -2635,9 +2679,7 @@
                                     }
                                 }
                             });
-                            app.views.updateStudentList();
-                            app.data.saveLocal();
-                            app.views.notify(`${count} alumnos desde Excel`, "success");
+                            this._persistStudents(`${count} alumnos desde Excel`);
                             input.value = '';
                         };
                         reader.readAsArrayBuffer(file);
@@ -2646,8 +2688,7 @@
                     delete: function(id) {
                         if(confirm("¿Eliminar alumno?")) {
                             app.state.students = app.state.students.filter(s => s.id !== id);
-                            app.views.updateStudentList();
-                            app.data.saveLocal();
+                            this._persistStudents();
                         }
                     },
                     
@@ -2674,8 +2715,7 @@
                         if(idx > -1) {
                             app.state.students[idx].name = newName;
                             app.state.students[idx].group = newGroup;
-                            app.data.saveLocal();
-                            app.views.updateStudentList();
+                            this._persistStudents();
                             
                             // Refresh Program Select if active
                             if(!document.getElementById('view-program').classList.contains('hidden')){
@@ -2743,14 +2783,24 @@
                             return;
                         }
                         
-                        this.currentStudent = app.state.students.find(s => s.id === id);
+                        const student = app.state.students.find(s => s.id === id);
+                        if (!student) {
+                            // El alumno ya no existe (borrado mientras estaba seleccionado)
+                            this.currentStudent = null;
+                            document.getElementById('program-student-select').value = '';
+                            document.getElementById('subject-selection-panel').classList.add('hidden');
+                            document.getElementById('criteria-container').classList.add('hidden');
+                            document.getElementById('program-placeholder').classList.remove('hidden');
+                            return;
+                        }
+                        this.currentStudent = student;
                         
                         document.getElementById('subject-selection-panel').classList.remove('hidden');
                         document.getElementById('program-placeholder').classList.add('hidden');
                         document.getElementById('criteria-container').classList.remove('hidden');
 
-                        document.getElementById('select-cyr').value = this.currentStudent.subjects.cyr || "";
-                        document.getElementById('select-tyd').value = this.currentStudent.subjects.tyd || "";
+                        document.getElementById('select-cyr').value = (this.currentStudent.subjects || {}).cyr || "";
+                        document.getElementById('select-tyd').value = (this.currentStudent.subjects || {}).tyd || "";
 
                         this.renderCriteria();
                     },
@@ -2812,7 +2862,8 @@
                     renderCriteria: function() {
                         const container = document.getElementById('criteria-lists');
                         container.innerHTML = '';
-                        const subs = [this.currentStudent.subjects.cyr, this.currentStudent.subjects.tyd].filter(Boolean);
+                        const subsObj = (this.currentStudent.subjects || {});
+                        const subs = [subsObj.cyr, subsObj.tyd].filter(Boolean);
 
                         if (subs.length === 0) {
                             container.innerHTML = '<p class="text-center text-gray-500 mt-4">Selecciona materias a la izquierda.</p>';
@@ -2915,7 +2966,7 @@
                         let totalActivities = 0;
                         
                         app.state.students.forEach(s => {
-                            if (s.subjects.cyr || s.subjects.tyd || Object.keys(s.passedCriteria).length > 0) {
+                            if (app.utils.studentSubjects(s).length > 0 || Object.keys(s.passedCriteria || {}).length > 0) {
                                 studentsWithData++;
                             }
                             totalActivities += (s.activities || []).length;
@@ -2989,8 +3040,9 @@
                     },
                     
                     hasIncompleteProgram: function(student) {
-                        // Verificar si no tiene actividades
-                        if (student.activities.length === 0) {
+                        // Verificar si no tiene actividades (acceso seguro por si
+                        // faltara el campo en datos importados)
+                        if (!student.activities || student.activities.length === 0) {
                             return true;
                         }
                         
@@ -3000,14 +3052,15 @@
                     },
                     
                     getUnassignedCriteria: function(student) {
-                        const subjects = [student.subjects.cyr, student.subjects.tyd].filter(Boolean);
+                        const subsObj = student.subjects || {};
+                        const subjects = [subsObj.cyr, subsObj.tyd].filter(Boolean);
                         let allRecoveryCriteria = [];
                         
                         subjects.forEach(sub => {
                             const criteriaList = criteriaDB[sub] || [];
                             criteriaList.forEach(c => {
                                 // If NOT passed initially, it needs recovery
-                                if (!student.passedCriteria.hasOwnProperty(c.code)) {
+                                if (!(student.passedCriteria || {}).hasOwnProperty(c.code)) {
                                     allRecoveryCriteria.push(c.code);
                                 }
                             });
@@ -3026,7 +3079,15 @@
                     // Verifica si todas las actividades del alumno actual están evaluadas
                     allEvaluated: function() {
                         if (!this.currentStudent) return false;
-                        return this.currentStudent.activities.every(act => act.evaluated === true);
+                        return (this.currentStudent.activities || []).every(act => act.evaluated === true);
+                    },
+
+                    // Refresca la vista de evaluación si está visible (antes este
+                    // bloque estaba duplicado en 5 funciones del módulo)
+                    _refreshEvaluation: function() {
+                        if (!document.getElementById('view-evaluation').classList.contains('hidden')) {
+                            app.modules.evaluation.calculate();
+                        }
                     },
                     
                     // Actualiza la visibilidad y estado del toggle de bloqueo
@@ -3084,7 +3145,15 @@
                             return;
                         }
                         
-                        this.currentStudent = app.state.students.find(s => s.id === id);
+                        const student = app.state.students.find(s => s.id === id);
+                        if (!student) {
+                            // El alumno ya no existe (borrado mientras estaba seleccionado)
+                            this.currentStudent = null;
+                            document.getElementById('activity-student-select').value = '';
+                            document.getElementById('activity-panel').classList.add('hidden');
+                            return;
+                        }
+                        this.currentStudent = student;
                         // Reset override al cargar nuevo alumno
                         this.lockOverride = false;
                         
@@ -3094,6 +3163,10 @@
                     },
                     
                     renderActivities: function() {
+                        // Garantizar que activities es un array (datos antiguos)
+                        if (!Array.isArray(this.currentStudent.activities)) {
+                            this.currentStudent.activities = [];
+                        }
                         // MEJORA 2: Ordenar actividades por fecha (más temprana primero)
                         this.currentStudent.activities.sort((a, b) => {
                             // Convertir fechas a objetos Date para comparación
@@ -3211,10 +3284,7 @@
                             // Guardar cambios y recargar
                             app.data.saveLocal();
                             this.renderActivities();
-                            // Actualizar la vista de evaluación si está activa
-                            if (!document.getElementById('view-evaluation').classList.contains('hidden')) {
-                                app.modules.evaluation.calculate();
-                            }
+                            this._refreshEvaluation();
                         }
                     },
                     
@@ -3236,9 +3306,7 @@
                             app.data.saveLocal();
                             // No recargar todo, solo actualizar la vista si es necesario? Mejor recargar para consistencia
                             this.renderActivities();
-                            if (!document.getElementById('view-evaluation').classList.contains('hidden')) {
-                                app.modules.evaluation.calculate();
-                            }
+                            this._refreshEvaluation();
                         }
                     },
                     
@@ -3255,9 +3323,7 @@
                         app.data.saveLocal();
                         this.renderActivities();
                         app.views.notify("Actividad duplicada correctamente", "success");
-                        if (!document.getElementById('view-evaluation').classList.contains('hidden')) {
-                            app.modules.evaluation.calculate();
-                        }
+                        this._refreshEvaluation();
                     },
                     
                     openModal: function(idx = -1) {
@@ -3272,7 +3338,7 @@
                         const critListDiv = document.getElementById('act-criteria-list');
                         critListDiv.innerHTML = '';
                         
-                        const subs = [this.currentStudent.subjects.cyr, this.currentStudent.subjects.tyd].filter(Boolean);
+                        const subs = app.utils.studentSubjects(this.currentStudent);
                         let allCrit = [];
                         subs.forEach(s => { if(criteriaDB[s]) allCrit = [...allCrit, ...criteriaDB[s]]; });
 
@@ -3391,10 +3457,7 @@
                         // Actualizar la lista desplegable para reflejar cambios en el estado del alumno
                         this.updateStudentSelectStyles();
                         
-                        // CORRECCIÓN: Actualizar la vista de evaluación si está activa
-                        if (!document.getElementById('view-evaluation').classList.contains('hidden')) {
-                            app.modules.evaluation.calculate();
-                        }
+                        this._refreshEvaluation();
                     },
                     
                     deleteActivity: function(idx) {
@@ -3405,10 +3468,7 @@
                             // Actualizar la lista desplegable
                             this.updateStudentSelectStyles();
                             
-                            // CORRECCIÓN: Actualizar la vista de evaluación si está activa
-                            if (!document.getElementById('view-evaluation').classList.contains('hidden')) {
-                                app.modules.evaluation.calculate();
-                            }
+                            this._refreshEvaluation();
                         }
                     },
                     
@@ -3435,8 +3495,20 @@
                             }
                         }
                         
-                        // Actualizar estilo del select según el alumno seleccionado actualmente
-                        this.loadStudent();
+                        // Actualizar el borde del select según el alumno actualmente
+                        // seleccionado (antes se llamaba a loadStudent(), lo que
+                        // provocaba un doble renderizado completo)
+                        const selectedOption = selectEl.options[selectEl.selectedIndex];
+                        if (selectedOption && selectedOption.value) {
+                            const student = app.state.students.find(s => s.id === selectedOption.value);
+                            if (student && this.hasIncompleteProgram(student)) {
+                                selectEl.classList.add('border-red-500', 'text-red-600', 'font-bold');
+                                selectEl.classList.remove('text-blue-800', 'border-gray-300');
+                                return;
+                            }
+                        }
+                        selectEl.classList.remove('border-red-500', 'text-red-600', 'font-bold');
+                        selectEl.classList.add('text-blue-800', 'border-gray-300');
                     },
                     
                     // --- FUNCIONALIDADES PARA COPIAR ACTIVIDADES ---
@@ -3450,7 +3522,7 @@
                         listDiv.innerHTML = '';
                         
                         // Obtener materias del alumno actual
-                        const currentSubjects = [this.currentStudent.subjects.cyr, this.currentStudent.subjects.tyd].filter(Boolean);
+                        const currentSubjects = app.utils.studentSubjects(this.currentStudent);
                         
                         // Recopilar todas las actividades de otros alumnos
                         let allActivities = [];
@@ -3460,7 +3532,7 @@
                             if (student.id === this.currentStudent.id) return;
                             
                             // Verificar si el alumno tiene materias compatibles
-                            const studentSubjects = [student.subjects.cyr, student.subjects.tyd].filter(Boolean);
+                            const studentSubjects = app.utils.studentSubjects(student);
                             const hasCompatibleSubjects = studentSubjects.some(sub => currentSubjects.includes(sub));
                             
                             if (!hasCompatibleSubjects) return;
@@ -3560,7 +3632,7 @@
                                 
                                 // Ajustar los criterios para que sean compatibles con el alumno actual
                                 // Solo mantener criterios que existen en las materias del alumno actual Y no están aprobados
-                                const currentSubjects = [this.currentStudent.subjects.cyr, this.currentStudent.subjects.tyd].filter(Boolean);
+                                const currentSubjects = app.utils.studentSubjects(this.currentStudent);
                                 
                                 // Obtener todos los criterios disponibles para el alumno actual
                                 let allAvailableCriteria = [];
@@ -3655,10 +3727,16 @@
                         if (!id) { resultsDiv.classList.add('hidden'); return; }
 
                         const s = app.state.students.find(stu => stu.id === id);
+                        if (!s) {
+                            // El alumno ya no existe (borrado mientras estaba seleccionado)
+                            resultsDiv.classList.add('hidden');
+                            document.getElementById('eval-student-select').value = '';
+                            return;
+                        }
                         resultsDiv.classList.remove('hidden');
                         resultsDiv.innerHTML = '';
 
-                        const subjects = [s.subjects.cyr, s.subjects.tyd].filter(Boolean);
+                        const subjects = app.utils.studentSubjects(s);
 
                         subjects.forEach(sub => {
                             const card = document.createElement('div');
@@ -3838,6 +3916,7 @@
                         const id = document.getElementById('report-student-select').value;
                         if (!id) return app.views.notify("Selecciona un alumno", "error");
                         const s = app.state.students.find(stu => stu.id === id);
+                        if (!s) return app.views.notify("El alumno seleccionado ya no existe", "error");
 
                         const { jsPDF } = window.jspdf;
                         const doc = new jsPDF();
@@ -3909,6 +3988,7 @@
                         const id = document.getElementById('report-student-select').value;
                         if (!id) return app.views.notify("Selecciona un alumno", "error");
                         const s = app.state.students.find(stu => stu.id === id);
+                        if (!s) return app.views.notify("El alumno seleccionado ya no existe", "error");
                         const praOnly = document.getElementById('report-filter-pra-only').checked;
 
                         const { jsPDF } = window.jspdf;
@@ -3924,7 +4004,7 @@
                             doc.setTextColor(0, 0, 0);
                         }
 
-                        const subs = [s.subjects.cyr, s.subjects.tyd].filter(Boolean);
+                        const subs = app.utils.studentSubjects(s);
                         let yPos = praOnly ? 34 : 30;
 
                         subs.forEach((sub, idx) => {
@@ -4001,6 +4081,7 @@
                         const id = document.getElementById('report-student-select').value;
                         if (!id) return app.views.notify("Selecciona un alumno", "error");
                         const s = app.state.students.find(stu => stu.id === id);
+                        if (!s) return app.views.notify("El alumno seleccionado ya no existe", "error");
                         const praOnly = document.getElementById('report-filter-pra-only').checked;
 
                         const { jsPDF } = window.jspdf;
@@ -4016,7 +4097,7 @@
                             doc.setTextColor(0, 0, 0);
                         }
 
-                        const subs = [s.subjects.cyr, s.subjects.tyd].filter(Boolean);
+                        const subs = app.utils.studentSubjects(s);
                         let yPos = praOnly ? 34 : 30;
 
                         subs.forEach((sub, idx) => {
@@ -4084,7 +4165,7 @@
                         if (!id) return app.views.notify("Selecciona un alumno primero", "error");
 
                         const s = app.state.students.find(stu => stu.id === id);
-                        if (!s || s.activities.length === 0) {
+                        if (!s || !(s.activities || []).length) {
                             return app.views.notify("El alumno no tiene actividades registradas", "warning");
                         }
 
@@ -4125,6 +4206,7 @@
                     generateActivityGradesPDF: function() {
                         const id = document.getElementById('report-student-select').value;
                         const s = app.state.students.find(stu => stu.id === id);
+                        if (!s) return app.views.notify("Selecciona un alumno válido", "error");
 
                         const selectedIndexes = Array.from(document.querySelectorAll('.ag-act-check:checked')).map(cb => parseInt(cb.value));
 
@@ -4261,7 +4343,7 @@
 
                         const filtered = app.state.students.filter(s => {
                             if (s.group !== group) return false;
-                            return s.subjects.cyr === subject || s.subjects.tyd === subject;
+                            return app.utils.studentSubjects(s).includes(subject);
                         });
 
                         countEl.classList.remove('hidden');
@@ -4279,7 +4361,7 @@
                         // Filtrar alumnos del grupo con esa materia
                         const students = app.state.students.filter(s => {
                             if (s.group !== group) return false;
-                            return s.subjects.cyr === subject || s.subjects.tyd === subject;
+                            return app.utils.studentSubjects(s).includes(subject);
                         }).sort((a, b) => a.name.localeCompare(b.name));
 
                         if (students.length === 0) {
@@ -4565,7 +4647,7 @@
 
                         const students = app.state.students.filter(s => {
                             if (s.group !== group) return false;
-                            return s.subjects.cyr === subject || s.subjects.tyd === subject;
+                            return app.utils.studentSubjects(s).includes(subject);
                         }).sort((a, b) => a.name.localeCompare(b.name));
 
                         if (students.length === 0) {
@@ -4858,7 +4940,7 @@
 
                         selectedSubjects.forEach(subject => {
                             const praStudents = allStudents.filter(s => {
-                                return s.subjects.cyr === subject || s.subjects.tyd === subject;
+                                return app.utils.studentSubjects(s).includes(subject);
                             }).sort((a, b) => a.name.localeCompare(b.name));
 
                             const subjectName = subjectNames[subject] || subject;
@@ -4930,130 +5012,155 @@
 
             // --- AUTH MODULE ---
             auth: {
-                showLoginTab: function() {
-                    document.getElementById('form-login').classList.remove('hidden');
-                    document.getElementById('form-register').classList.add('hidden');
-                    document.getElementById('tab-login').classList.add('text-blue-600', 'border-blue-600');
-                    document.getElementById('tab-login').classList.remove('text-gray-400', 'border-transparent');
-                    document.getElementById('tab-register').classList.remove('text-blue-600', 'border-blue-600');
-                    document.getElementById('tab-register').classList.add('text-gray-400', 'border-transparent');
+                // Traduce los códigos de error de Firebase Auth a mensajes
+                // claros en español (antes se mostraba el mensaje técnico en inglés)
+                _authErrorMessage: function(e) {
+                    const code = (e && e.code) || '';
+                    const map = {
+                        'auth/invalid-credential': 'Usuario o contraseña incorrectos',
+                        'auth/wrong-password': 'Usuario o contraseña incorrectos',
+                        'auth/user-not-found': 'Usuario o contraseña incorrectos',
+                        'auth/invalid-login-credentials': 'Usuario o contraseña incorrectos',
+                        'auth/too-many-requests': 'Demasiados intentos fallidos. Espera un momento y vuelve a intentarlo',
+                        'auth/network-request-failed': 'Error de conexión. Comprueba tu conexión a internet',
+                        'auth/invalid-email': 'El nombre de usuario no es válido',
+                        'auth/user-disabled': 'Esta cuenta ha sido desactivada',
+                        'auth/requires-recent-login': 'Por seguridad, cierra sesión, vuelve a entrar e inténtalo de nuevo',
+                        'auth/email-already-in-use': 'Ya existe una cuenta con ese nombre de usuario',
+                        'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres'
+                    };
+                    return map[code] || ((e && e.message) || 'Error inesperado');
                 },
-                showRegisterTab: function() {
-                    document.getElementById('form-login').classList.add('hidden');
-                    document.getElementById('form-register').classList.remove('hidden');
-                    document.getElementById('tab-register').classList.add('text-blue-600', 'border-blue-600');
-                    document.getElementById('tab-register').classList.remove('text-gray-400', 'border-transparent');
-                    document.getElementById('tab-login').classList.remove('text-blue-600', 'border-blue-600');
-                    document.getElementById('tab-login').classList.add('text-gray-400', 'border-transparent');
+
+                // Muestra el mensaje de error del formulario de login y
+                // asegura que la pantalla de login esté visible
+                _showLoginError: function(msg) {
+                    const errorEl = document.getElementById('login-error');
+                    errorEl.textContent = msg;
+                    errorEl.classList.remove('hidden');
+                    document.getElementById('login-screen').classList.remove('hidden');
+                    document.getElementById('app-content').classList.add('hidden');
                 },
+
+                // Resuelve un nombre de usuario al email real de la cuenta.
+                // Los perfiles guardan su email en users/{uid}; si no existe
+                // (usuarios antiguos), se deduce del nombre de usuario.
+                _resolveEmailForUsername: async function(username) {
+                    try {
+                        const usersSnap = await db.ref('users').once('value');
+                        if (usersSnap.exists()) {
+                            let found = null;
+                            usersSnap.forEach(child => {
+                                const u = child.val();
+                                if (u && typeof u.username === 'string' && u.username.toLowerCase() === username) {
+                                    found = u;
+                                }
+                            });
+                            if (found) {
+                                if (found.status === 'blocked') {
+                                    return { blocked: true };
+                                }
+                                return { email: found.email || (username + '@gestionpra.local') };
+                            }
+                            return { email: username + '@gestionpra.local' };
+                        }
+                    } catch(e) {
+                        console.warn('[AUTH] No se pudo consultar la lista de usuarios para el login:', e);
+                    }
+                    return { email: username + '@gestionpra.local' };
+                },
+
                 login: async function() {
                     const username = document.getElementById('login-username').value.trim().toLowerCase();
                     const password = document.getElementById('login-password').value;
                     const errorEl = document.getElementById('login-error');
                     errorEl.classList.add('hidden');
-                    
+
                     if (!username || !password) {
                         errorEl.textContent = 'Introduce usuario y contraseña';
                         errorEl.classList.remove('hidden');
                         return;
                     }
-                    
+
+                    const loginBtn = document.querySelector('#form-login button');
                     try {
-                        const email = username + '@gestionpra.local';
-                        await auth.signInWithEmailAndPassword(email, password);
-                    } catch(e) {
-                        errorEl.textContent = 'Error: ' + e.message;
-                        errorEl.classList.remove('hidden');
-                    }
-                },
-                register: async function() {
-                    const name = document.getElementById('register-name').value.trim();
-                    const username = document.getElementById('register-username').value.trim().toLowerCase();
-                    const password = document.getElementById('register-password').value;
-                    const errorEl = document.getElementById('register-error');
-                    errorEl.classList.add('hidden');
-                    
-                    if (!name || !username || !password) {
-                        errorEl.textContent = 'Todos los campos son obligatorios';
-                        errorEl.classList.remove('hidden');
-                        return;
-                    }
-                    if (password.length < 6) {
-                        errorEl.textContent = 'La contraseña debe tener al menos 6 caracteres';
-                        errorEl.classList.remove('hidden');
-                        return;
-                    }
-                    if (!/^[a-z0-9_.-]+$/.test(username)) {
-                        errorEl.textContent = 'El usuario solo puede contener letras minúsculas, números, puntos y guiones';
-                        errorEl.classList.remove('hidden');
-                        return;
-                    }
-                    
-                    try {
-                        // Comprobar si es el primer usuario registrado (será admin)
-                        const usersSnap = await db.ref('users').once('value');
-                        const isFirstUser = !usersSnap.exists() || usersSnap.numChildren() === 0;
-                        
-                        const email = username + '@gestionpra.local';
-                        const cred = await auth.createUserWithEmailAndPassword(email, password);
-                        
-                        await db.ref('users/' + cred.user.uid).set({
-                            name: name,
-                            username: username,
-                            role: isFirstUser ? 'admin' : 'user',
-                            status: 'active',
-                            createdAt: firebase.database.ServerValue.TIMESTAMP,
-                            lastLogin: null
-                        });
-                        
-                        if (!isFirstUser) {
-                            // Limpiar formulario
-                            document.getElementById('register-name').value = '';
-                            document.getElementById('register-username').value = '';
-                            document.getElementById('register-password').value = '';
+                        loginBtn.disabled = true;
+                        loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Entrando...';
+                        // Resolver el email asociado al nombre de usuario (permite
+                        // que un admin cambie el usuario de una cuenta sin romper
+                        // el acceso: el login busca por username en los perfiles)
+                        const resolved = await this._resolveEmailForUsername(username);
+                        if (resolved.blocked) {
+                            errorEl.textContent = 'Tu cuenta ha sido bloqueada por un administrador. Contacta con el administrador del sistema.';
+                            errorEl.classList.remove('hidden');
+                            return;
                         }
+                        await auth.signInWithEmailAndPassword(resolved.email, password);
+                        // La sesión se abre: limpiar el campo de contraseña
+                        document.getElementById('login-password').value = '';
                     } catch(e) {
-                        errorEl.textContent = 'Error: ' + e.message;
+                        errorEl.textContent = this._authErrorMessage(e);
                         errorEl.classList.remove('hidden');
+                    } finally {
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket mr-2"></i> Entrar';
                     }
                 },
+
                 logout: function() {
                     auth.signOut();
                 },
+
                 checkAuth: function() {
                     auth.onAuthStateChanged(async (user) => {
                         if (user) {
+                            // ¿Es una cuenta eliminada por un administrador?
+                            // (el perfil RTDB se borra, pero la cuenta Auth no puede
+                            // borrarse desde el cliente: la registramos para vetarla)
+                            try {
+                                const deletedSnap = await db.ref('deletedUsers/' + user.uid).once('value');
+                                if (deletedSnap.exists()) {
+                                    await auth.signOut();
+                                    this._showLoginError('Tu cuenta ha sido eliminada por un administrador. Si necesitas acceso, contacta con un administrador para que cree una cuenta nueva.');
+                                    return;
+                                }
+                            } catch(e) {
+                                console.warn('[AUTH] No se pudo comprobar la lista de usuarios eliminados:', e);
+                            }
+
                             // Verificar estado del usuario en RTD
                             const snap = await db.ref('users/' + user.uid).once('value');
                             if (snap.exists()) {
                                 const userData = snap.val();
-                                
+
                                 // Si el usuario está bloqueado, cerrar sesión
                                 if (userData.status === 'blocked') {
                                     await auth.signOut();
-                                    const errorEl = document.getElementById('login-error');
-                                    errorEl.textContent = 'Tu cuenta ha sido bloqueada por un administrador. Contacta con el administrador del sistema.';
-                                    errorEl.classList.remove('hidden');
-                                    document.getElementById('login-screen').classList.remove('hidden');
-                                    document.getElementById('app-content').classList.add('hidden');
+                                    this._showLoginError('Tu cuenta ha sido bloqueada por un administrador. Contacta con el administrador del sistema.');
                                     return;
                                 }
-                                
+
                                 // Si el usuario está pendiente de aprobación
                                 if (userData.status === 'pending') {
                                     await auth.signOut();
-                                    const errorEl = document.getElementById('login-error');
-                                    errorEl.textContent = 'Tu cuenta está pendiente de aprobación por un administrador. Espera a que te activen.';
-                                    errorEl.classList.remove('hidden');
-                                    document.getElementById('login-screen').classList.remove('hidden');
-                                    document.getElementById('app-content').classList.add('hidden');
+                                    this._showLoginError('Tu cuenta está pendiente de aprobación por un administrador. Espera a que te activen.');
                                     return;
                                 }
-                                
-                                // Actualizar último acceso
+
+                                // Actualizar último acceso y completar el email
+                                // del perfil si faltaba (perfiles antiguos): el
+                                // login por nombre de usuario depende de ese campo
+                                const profileUpdate = {};
+                                if (!userData.email && user.email) {
+                                    profileUpdate.email = user.email;
+                                }
+                                if (Object.keys(profileUpdate).length > 0) {
+                                    await db.ref('users/' + user.uid).update(profileUpdate);
+                                    userData.email = profileUpdate.email;
+                                }
                                 await db.ref('users/' + user.uid + '/lastLogin').set(firebase.database.ServerValue.TIMESTAMP);
-                                
-                                app.state.currentUser = { uid: user.uid, ...userData };
+
+                                app.state.currentUser = { uid: user.uid, email: user.email, ...userData };
                             } else {
                                 // Usuario autenticado pero sin perfil en la base de
                                 // datos: crearlo automáticamente para que aparezca en
@@ -5064,6 +5171,7 @@
                                     await db.ref('users/' + user.uid).set({
                                         name: fallbackName,
                                         username: fallbackUsername,
+                                        email: user.email || (fallbackUsername + '@gestionpra.local'),
                                         role: 'user',
                                         status: 'active',
                                         createdAt: firebase.database.ServerValue.TIMESTAMP,
@@ -5072,9 +5180,9 @@
                                 } catch(e) {
                                     console.warn('[AUTH] No se pudo crear el perfil del usuario en la base de datos:', e);
                                 }
-                                app.state.currentUser = { uid: user.uid, name: fallbackName, username: fallbackUsername, role: 'user', status: 'active' };
+                                app.state.currentUser = { uid: user.uid, email: user.email, name: fallbackName, username: fallbackUsername, role: 'user', status: 'active' };
                             }
-                            
+
                             // --- Garantizar que siempre exista un administrador ---
                             // Si en el sistema no queda ningún administrador (por ejemplo,
                             // porque el único fue eliminado o degradado), el usuario que
@@ -5098,7 +5206,7 @@
                             } catch(e) {
                                 console.warn('[AUTH] No se pudo verificar la existencia de administradores:', e);
                             }
-                            
+
                             // --- Sincronización en tiempo real del perfil propio ---
                             // Si un administrador cambia el nombre o el rol del usuario
                             // activo, el chip del header se actualiza al instante.
@@ -5108,7 +5216,7 @@
                                 ownRef.on('value', (ownSnap) => {
                                     if (ownSnap.exists() && app.state.currentUser && app.state.currentUser.uid === user.uid) {
                                         const prevRole = app.state.currentUser.role;
-                                        app.state.currentUser = { uid: user.uid, ...ownSnap.val() };
+                                        app.state.currentUser = { uid: user.uid, email: user.email, ...ownSnap.val() };
                                         app.auth.updateHeader();
                                         if (prevRole !== app.state.currentUser.role) {
                                             app.views.notify(app.state.currentUser.role === 'admin'
@@ -5121,10 +5229,10 @@
                             } catch(e) {
                                 console.warn('[AUTH] No se pudo suscribir a los cambios del perfil:', e);
                             }
-                            
+
                             document.getElementById('login-screen').classList.add('hidden');
                             document.getElementById('app-content').classList.remove('hidden');
-                            
+
                             await app.firebase.loadCourseData();
                             app.auth.updateHeader();
                             app.init();
@@ -5132,13 +5240,16 @@
                             app.state.currentUser = null;
                             document.getElementById('login-screen').classList.remove('hidden');
                             document.getElementById('app-content').classList.add('hidden');
-                            
+                            // Limpiar la contraseña introducida por seguridad
+                            const passInput = document.getElementById('login-password');
+                            if (passInput) passInput.value = '';
+
                             // Quitar la suscripción en tiempo real del perfil propio
                             if (app.auth._ownProfileRef) {
                                 app.auth._ownProfileRef.off();
                                 app.auth._ownProfileRef = null;
                             }
-                            
+
                             // Limpiar el header de info de usuario al cerrar sesión
                             const existingUserInfo = document.getElementById('header-user-info');
                             if (existingUserInfo) existingUserInfo.remove();
@@ -5149,13 +5260,14 @@
                     // Eliminar info previa si existe
                     const existingUserInfo = document.getElementById('header-user-info');
                     if (existingUserInfo) existingUserInfo.remove();
-                    
+
                     const header = document.querySelector('header .flex.gap-4');
                     if (!header || !app.state.currentUser) return;
                     const user = app.state.currentUser;
-                    
+
                     // Chip del usuario activo: avatar con iniciales, nombre
                     // completo, @usuario y distintivo de administrador.
+                    // Al pulsarlo se abre "Mi Perfil" (editar datos y contraseña).
                     const displayName = user.name || user.username || 'Usuario';
                     const initials = app.utils.escapeHTML((displayName.trim().split(/\s+/).slice(0, 2).map(w => w.charAt(0).toUpperCase()).join('')) || '?');
                     const roleLabel = user.role === 'admin'
@@ -5165,19 +5277,104 @@
                     userInfo.id = 'header-user-info';
                     userInfo.className = 'flex items-center';
                     userInfo.innerHTML = `
-                        <div class="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors border border-white/25 rounded-full pl-1 pr-1 py-1" title="Usuario activo">
+                        <div onclick="app.auth.openProfileModal()" class="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors border border-white/25 rounded-full pl-1 pr-1 py-1 cursor-pointer" title="Usuario activo - Pulsa para editar tu perfil">
                             <div class="w-7 h-7 rounded-full bg-blue-500 border border-white/30 flex items-center justify-center text-[11px] font-bold text-white shrink-0">${initials}</div>
                             <div class="leading-tight text-left min-w-0">
                                 <div class="text-[13px] font-semibold text-white flex items-center gap-1.5 max-w-[110px] sm:max-w-none truncate">${app.utils.escapeHTML(displayName)}${roleLabel}</div>
                                 <div class="text-[10px] text-blue-200 truncate max-w-[110px] sm:max-w-none">@${app.utils.escapeHTML(user.username || '')}</div>
                             </div>
-                            <button onclick="app.auth.logout()" class="hover:text-red-300 transition hover-scale px-1.5 shrink-0" title="Cerrar sesión">
+                            <button onclick="event.stopPropagation(); app.auth.logout()" class="hover:text-red-300 transition hover-scale px-1.5 shrink-0" title="Cerrar sesión">
                                 <i class="fa-solid fa-right-from-bracket text-lg"></i>
                             </button>
                         </div>
                     `;
                     header.insertBefore(userInfo, header.firstChild);
                 },
+
+                // --- MI PERFIL (usuario activo) ---
+                openProfileModal: function() {
+                    const u = app.state.currentUser;
+                    if (!u) return;
+                    document.getElementById('profile-name').value = u.name || '';
+                    document.getElementById('profile-username').value = u.username || '';
+                    document.getElementById('profile-new-pass').value = '';
+                    document.getElementById('profile-new-pass2').value = '';
+                    const errorEl = document.getElementById('profile-error');
+                    errorEl.classList.add('hidden');
+                    app.utils.openModal('modal-my-profile', this.closeProfileModal);
+                },
+                closeProfileModal: function() {
+                    app.utils.closeModal('modal-my-profile');
+                },
+                saveProfile: async function() {
+                    const u = app.state.currentUser;
+                    if (!u) return;
+                    const name = document.getElementById('profile-name').value.trim();
+                    const username = document.getElementById('profile-username').value.trim().toLowerCase();
+                    const newPass = document.getElementById('profile-new-pass').value;
+                    const newPass2 = document.getElementById('profile-new-pass2').value;
+                    const errorEl = document.getElementById('profile-error');
+                    const showError = (msg) => {
+                        errorEl.textContent = msg;
+                        errorEl.classList.remove('hidden');
+                    };
+                    errorEl.classList.add('hidden');
+
+                    if (!name || !username) return showError('El nombre y el usuario son obligatorios');
+                    if (!app.utils.isValidUsername(username)) return showError('El usuario solo puede contener letras minúsculas, números, puntos, guiones y guiones bajos');
+                    if (newPass || newPass2) {
+                        if (newPass !== newPass2) return showError('Las contraseñas nuevas no coinciden');
+                        if (newPass.length < 6) return showError('La nueva contraseña debe tener al menos 6 caracteres');
+                    }
+
+                    try {
+                        // 1. Comprobar que el nuevo usuario no esté en uso por otra cuenta
+                        if (username !== (u.username || '').toLowerCase()) {
+                            const users = await app.firebase.loadUsers();
+                            if (users.some(x => x.uid !== u.uid && (x.username || '').toLowerCase() === username)) {
+                                return showError('Ese nombre de usuario ya está en uso por otra cuenta');
+                            }
+                        }
+
+                        // 2. Actualizar el perfil en la base de datos.
+                        //    El email de acceso NO cambia (el login resuelve
+                        //    usuario -> email leyendo el campo email del perfil),
+                        //    así que lo fijamos explícitamente para conservarlo.
+                        const accessEmail = (auth.currentUser && auth.currentUser.email)
+                            || u.email
+                            || ((u.username || '').toLowerCase() + '@gestionpra.local');
+                        await db.ref('users/' + u.uid).update({
+                            name: name,
+                            username: username,
+                            email: accessEmail
+                        });
+
+                        // 3. Cambiar la contraseña propia (si se solicitó)
+                        if (newPass) {
+                            try {
+                                await auth.currentUser.updatePassword(newPass);
+                            } catch(e) {
+                                if (e && e.code === 'auth/requires-recent-login') {
+                                    app.views.notify('Datos actualizados. Para cambiar la contraseña, cierra sesión, vuelve a entrar e inténtalo de nuevo', 'warning');
+                                } else {
+                                    throw e;
+                                }
+                            }
+                        }
+
+                        // 4. Refrescar estado local y chip del header
+                        app.state.currentUser.name = name;
+                        app.state.currentUser.username = username;
+                        this.updateHeader();
+
+                        this.closeProfileModal();
+                        app.views.notify('Perfil actualizado correctamente', 'success');
+                        // Refrescar el panel de gestión de usuarios si está visible
+                        app.config.renderUsers();
+                    } catch(e) {
+                        showError(this._authErrorMessage(e));
+                    }
+                }
             },
 
             // --- FIREBASE KEY ENCODING ---
@@ -5264,7 +5461,9 @@
                                 students = Object.values(students);
                             }
                             if (!Array.isArray(students)) students = [];
-                            app.state.students = students;
+                            // Normalizar estructura (garantiza subjects, passedCriteria,
+                            // activities e id en cada alumno)
+                            app.state.students = students.map(app.utils.normalizeStudent).filter(Boolean);
                         } else {
                             app.state.students = [];
                             // Crear estructura vacía para este curso
@@ -5285,46 +5484,6 @@
                     } catch(e) {
                         console.error('Error loading course data:', e);
                         app.views.notify('Error al cargar datos del curso', 'error');
-                    }
-                },
-                // Migrar datos antiguos con claves codificadas (%2E) o con puntos (.)
-                migrateLegacyKeys: async function(course) {
-                    if (!course) course = app.state.currentCourse;
-                    let needsFix = false;
-                    const students = app.state.students;
-                    
-                    // Comprobar si hay claves con %2E o puntos directos
-                    for (const student of students) {
-                        const pc = student.passedCriteria || {};
-                        if (Object.keys(pc).some(k => k.includes('%2E') || k.includes('.'))) { needsFix = true; break; }
-                        if (student.activities) {
-                            for (const act of student.activities) {
-                                const g = act.grades || {};
-                                if (Object.keys(g).some(k => k.includes('%2E') || k.includes('.'))) { needsFix = true; break; }
-                            }
-                        }
-                        if (needsFix) break;
-                    }
-                    
-                    if (!needsFix) return false;
-                    
-                    console.log('[Firebase] Migrando claves con formato antiguo...');
-                    app.views.notify('Migrando formato de datos al nuevo sistema...', 'info');
-                    
-                    try {
-                        const ref = db.ref('courses/' + course + '/data/students');
-                        for (const student of students) {
-                            // Codificar para Firebase: reemplazar . por ·
-                            const encodedStudent = app.encodeFirebaseKeys(student);
-                            await ref.child(student.id).set(encodedStudent);
-                        }
-                        console.log('[Firebase] Migración completada.');
-                        app.views.notify('Datos migrados correctamente. Recargando...', 'success');
-                        return true;
-                    } catch(e) {
-                        console.error('[Firebase] Error migrando claves:', e);
-                        app.views.notify('Error al migrar datos: ' + e.message, 'error');
-                        return false;
                     }
                 },
                 saveCourseData: async function() {
@@ -5349,6 +5508,15 @@
                         app.views.notify('Error al guardar en Firebase: ' + e.message, 'error');
                     }
                 },
+                // Comprueba que el usuario activo es administrador (los datos
+                // de Firebase Rules también protegen, esto mejora el feedback)
+                _requireAdmin: function() {
+                    if (!app.state.currentUser || app.state.currentUser.role !== 'admin') {
+                        app.views.notify('Esta operación requiere permisos de administrador', 'error');
+                        return false;
+                    }
+                    return true;
+                },
                 loadUsers: async function() {
                     try {
                         const snap = await db.ref('users').once('value');
@@ -5364,29 +5532,38 @@
                         return [];
                     }
                 },
+                // Protección compartida: impide dejar el sistema sin administradores.
+                // Devuelve true si el cambio está permitido.
+                _checkLastAdmin: function(users, uid, newRole) {
+                    const target = users.find(u => u.uid === uid);
+                    const adminCount = users.filter(u => u.role === 'admin' && u.status !== 'blocked').length;
+                    if (target && target.role === 'admin' && newRole !== 'admin' && adminCount <= 1) {
+                        app.views.notify('No se puede quitar el rol de administrador: es el único del sistema. Convierte antes en administrador a otro usuario.', 'error');
+                        return false;
+                    }
+                    return true;
+                },
                 updateUserRole: async function(uid, role) {
+                    if (!this._requireAdmin()) { app.config.renderUsers(); return; }
                     try {
-                        // Protección: nunca dejar el sistema sin administradores.
                         const users = await this.loadUsers();
-                        const target = users.find(u => u.uid === uid);
-                        const adminCount = users.filter(u => u.role === 'admin' && u.status !== 'blocked').length;
                         const isSelf = app.state.currentUser && uid === app.state.currentUser.uid;
-                        
-                        if (target && target.role === 'admin' && role !== 'admin' && adminCount <= 1) {
-                            app.views.notify('No se puede quitar el rol de administrador: es el único del sistema. Convierte antes en administrador a otro usuario.', 'error');
+
+                        // Protección: nunca dejar el sistema sin administradores.
+                        if (!this._checkLastAdmin(users, uid, role)) {
                             app.config.renderUsers(); // Revertir el desplegable
                             return;
                         }
-                        
+
                         if (isSelf && role !== 'admin') {
                             if (!confirm('¿Seguro que quieres dejar de ser administrador? Perderás el acceso a la gestión de usuarios.')) {
                                 app.config.renderUsers(); // Revertir el desplegable
                                 return;
                             }
                         }
-                        
+
                         await db.ref('users/' + uid + '/role').set(role);
-                        
+
                         // Si el cambio afecta al usuario activo, refrescar su chip
                         // del header (la suscripción en tiempo real también lo hará).
                         if (isSelf && app.state.currentUser) {
@@ -5395,78 +5572,145 @@
                         } else {
                             app.views.notify('Rol actualizado a ' + (role === 'admin' ? 'administrador' : 'usuario'), 'success');
                         }
-                        
+
                         app.config.renderUsers();
                     } catch(e) {
                         app.views.notify('Error al actualizar rol', 'error');
                     }
                 },
+                // Edición completa de un usuario por parte de un administrador:
+                // nombre, nombre de usuario, rol y estado. El email de acceso no
+                // cambia (el login resuelve usuario -> email vía perfiles).
+                updateUserProfile: async function(uid, changes) {
+                    if (!this._requireAdmin()) return { success: false, message: 'Permiso denegado' };
+                    try {
+                        const users = await this.loadUsers();
+                        const target = users.find(u => u.uid === uid);
+                        if (!target) return { success: false, message: 'El usuario ya no existe' };
+
+                        const name = (changes.name || '').trim();
+                        const username = (changes.username || '').trim().toLowerCase();
+                        const role = changes.role;
+                        const status = changes.status;
+
+                        if (!name || !username) return { success: false, message: 'El nombre y el usuario son obligatorios' };
+                        if (!app.utils.isValidUsername(username)) return { success: false, message: 'El usuario solo puede contener letras minúsculas, números, puntos, guiones y guiones bajos' };
+                        if (users.some(u => u.uid !== uid && (u.username || '').toLowerCase() === username)) {
+                            return { success: false, message: 'Ese nombre de usuario ya está en uso por otra cuenta' };
+                        }
+                        if (!this._checkLastAdmin(users, uid, role)) return { success: false, message: 'No se puede dejar el sistema sin administradores' };
+
+                        const isSelf = app.state.currentUser && uid === app.state.currentUser.uid;
+                        if (isSelf && role !== 'admin' && !confirm('¿Seguro que quieres dejar de ser administrador? Perderás el acceso a la gestión de usuarios.')) {
+                            return { success: false, message: 'Operación cancelada' };
+                        }
+                        if (isSelf && status === 'blocked') {
+                            return { success: false, message: 'No puedes bloquear tu propia cuenta' };
+                        }
+
+                        await db.ref('users/' + uid).update({
+                            name: name,
+                            username: username,
+                            // Conservar el email real de acceso: el login resuelve
+                            // usuario -> email mediante este campo, de modo que
+                            // cambiar el usuario nunca rompe el acceso
+                            email: target.email || ((target.username || '').toLowerCase() + '@gestionpra.local'),
+                            role: role,
+                            status: status
+                        });
+
+                        if (isSelf && app.state.currentUser) {
+                            app.state.currentUser.name = name;
+                            app.state.currentUser.username = username;
+                            app.state.currentUser.role = role;
+                            app.auth.updateHeader();
+                        }
+                        return { success: true, message: 'Usuario actualizado correctamente' };
+                    } catch(e) {
+                        console.error('Error actualizando usuario:', e);
+                        return { success: false, message: 'Error al actualizar el usuario' };
+                    }
+                },
                 deleteUser: async function(uid) {
-                    if (uid === app.state.currentUser.uid) {
+                    if (!this._requireAdmin()) return;
+                    if (!app.state.currentUser || uid === app.state.currentUser.uid) {
                         return app.views.notify('No puedes eliminar tu propia cuenta', 'error');
                     }
-                    if (!confirm('¿Eliminar este usuario del sistema? Se eliminará su perfil y datos de acceso. Esta acción no se puede deshacer.')) return;
-                    
+                    if (!confirm('¿Eliminar este usuario del sistema? Se eliminará su perfil y dejará de poder iniciar sesión. Esta acción no se puede deshacer.')) return;
+
                     try {
+                        // Borrar el perfil y registrar el uid como eliminado: la cuenta
+                        // Auth no puede borrarse desde el cliente (requiere Admin SDK),
+                        // así que checkAuth() vetará sus futuros inicios de sesión.
                         await db.ref('users/' + uid).remove();
+                        await db.ref('deletedUsers/' + uid).set(firebase.database.ServerValue.TIMESTAMP);
                         app.views.notify('Usuario eliminado del sistema', 'success');
                         app.config.renderUsers();
                     } catch(e) {
                         app.views.notify('Error al eliminar usuario', 'error');
                     }
                 },
+                // Crear un usuario desde la propia app (solo administradores).
+                // Usa una instancia secundaria de Firebase para crear la cuenta SIN
+                // cerrar la sesión del administrador (antes se hacía signOut +
+                // signIn con la contraseña del admin, lo que rompía la sesión si
+                // algo fallaba).
                 createUser: async function(name, username, password, role) {
+                    if (!this._requireAdmin()) return { success: false, message: 'Permiso denegado' };
+                    name = (name || '').trim();
+                    username = (username || '').trim().toLowerCase();
                     if (!name || !username || !password) {
                         return { success: false, message: 'Todos los campos son obligatorios' };
                     }
                     if (password.length < 6) {
                         return { success: false, message: 'La contraseña debe tener al menos 6 caracteres' };
                     }
-                    if (!/^[a-z0-9_.-]+$/.test(username)) {
-                        return { success: false, message: 'El usuario solo puede contener letras minúsculas, números, puntos y guiones' };
+                    if (!app.utils.isValidUsername(username)) {
+                        return { success: false, message: 'El usuario solo puede contener letras minúsculas, números, puntos, guiones y guiones bajos' };
                     }
-                    
+
                     // Comprobar que el username no existe ya
                     const existingUsers = await this.loadUsers();
-                    if (existingUsers.find(u => u.username === username)) {
+                    if (existingUsers.find(u => (u.username || '').toLowerCase() === username)) {
                         return { success: false, message: 'Ya existe un usuario con ese nombre de usuario' };
                     }
-                    
+
+                    const email = username + '@gestionpra.local';
+                    const secondaryAppName = 'user-creator-' + Date.now();
+                    let secondaryApp = null;
                     try {
-                        // Guardar credenciales del admin actual para restaurar sesión
-                        const adminEmail = auth.currentUser.email;
-                        
-                        // Crear la cuenta del nuevo usuario
-                        const email = username + '@gestionpra.local';
-                        const cred = await auth.createUserWithEmailAndPassword(email, password);
-                        
+                        secondaryApp = firebase.initializeApp(firebaseConfig, secondaryAppName);
+                        const secondaryAuth = secondaryApp.auth();
+                        const cred = await secondaryAuth.createUserWithEmailAndPassword(email, password);
+
                         // Guardar datos del nuevo usuario en RTD
                         await db.ref('users/' + cred.user.uid).set({
                             name: name,
                             username: username,
-                            role: role,
+                            email: email,
+                            role: role === 'admin' ? 'admin' : 'user',
                             status: 'active',
                             createdAt: firebase.database.ServerValue.TIMESTAMP,
                             lastLogin: null
                         });
-                        
-                        // Cerrar sesión del nuevo usuario y volver a iniciar como admin
-                        await auth.signOut();
-                        await auth.signInWithEmailAndPassword(adminEmail, document.getElementById('admin-password-confirm').value);
-                        
+
                         return { success: true, message: 'Usuario "' + name + '" creado correctamente' };
                     } catch(e) {
-                        // Si falla, intentar restaurar sesión del admin
-                        try {
-                            const adminEmail = app.state.currentUser.username + '@gestionpra.local';
-                            await auth.signInWithEmailAndPassword(adminEmail, document.getElementById('admin-password-confirm').value);
-                        } catch(restoreErr) {
-                            console.error('No se pudo restaurar sesión del admin:', restoreErr);
+                        console.error('Error creando usuario:', e);
+                        const msg = e && e.code === 'auth/email-already-in-use'
+                            ? 'Ya existe una cuenta con ese nombre de usuario'
+                            : 'Error al crear usuario: ' + app.auth._authErrorMessage(e);
+                        return { success: false, message: msg };
+                    } finally {
+                        // Cerrar sesión de la instancia secundaria y liberarla
+                        if (secondaryApp) {
+                            try { await secondaryApp.auth().signOut(); } catch(e) {}
+                            try { firebase.deleteApp(secondaryApp); } catch(e) {}
                         }
-                        return { success: false, message: 'Error al crear usuario: ' + e.message };
                     }
                 },
                 updateUserStatus: async function(uid, newStatus) {
+                    if (!this._requireAdmin()) return;
                     try {
                         await db.ref('users/' + uid + '/status').set(newStatus);
                         const statusLabels = { active: 'activado', blocked: 'bloqueado', pending: 'pendiente' };
@@ -5480,7 +5724,8 @@
                     return this.updateUserStatus(uid, 'active');
                 },
                 blockUser: async function(uid) {
-                    if (uid === app.state.currentUser.uid) {
+                    if (!this._requireAdmin()) return;
+                    if (app.state.currentUser && uid === app.state.currentUser.uid) {
                         return app.views.notify('No puedes bloquear tu propia cuenta', 'error');
                     }
                     if (!confirm('¿Bloquear este usuario? No podrá acceder al sistema hasta que se le active de nuevo.')) return;
@@ -5517,12 +5762,12 @@
                     app.state.currentCourse = courseYear;
                     app.state.students = [];
                     await this.loadCourseData();
+                    // renderCourses ya actualiza el switcher, el display y el
+                    // desplegable de exportación; loadCourseData refresca el
+                    // listado de alumnos (antes había renders duplicados)
                     app.config.renderCourses();
                     app.config.renderStudents();
-                    app.config.renderCourseSwitcher();
-                    app.config.updateCourseDisplay();
-                    app.data.populateExportCourseSelect();
-                    // Update delete-all course label
+                    // Etiqueta del panel de borrado masivo
                     const deleteLabel = document.getElementById('delete-all-course-label');
                     if (deleteLabel) deleteLabel.textContent = courseYear;
                     app.views.notify('Curso cambiado a ' + courseYear, 'success');
@@ -5617,13 +5862,16 @@
                             const isAdmin = app.state.currentUser && app.state.currentUser.role === 'admin';
                             const container = document.getElementById('config-users-panel');
                             if (!container) return;
-                            
+
                             if (!isAdmin) {
-                                // Vista para usuarios no admin: su propia info + quiénes son los administradores
+                                // Sin sesión o sin permisos: información mínima
                                 const u = app.state.currentUser;
-                                
-                                // Consultar los administradores actuales para informar
-                                // a quién pedir permisos (o cómo recuperar la gestión).
+                                if (!u) {
+                                    container.innerHTML = '<p class="text-sm text-gray-500">Inicia sesión para ver la información de usuarios.</p>';
+                                    return;
+                                }
+
+                                // Vista para usuarios no admin: su propia info + quiénes son los administradores
                                 let adminsHtml = '';
                                 try {
                                     const allUsers = await app.firebase.loadUsers();
@@ -5634,24 +5882,25 @@
                                         adminsHtml = '<div class="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg text-xs text-orange-700"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Actualmente no hay ningún administrador. Cierra sesión y vuelve a iniciarla: el sistema te otorgará permisos de administrador automáticamente para que puedas gestionar usuarios.</div>';
                                     }
                                 } catch(e) { /* Sin permisos para listar usuarios */ }
-                                
+
                                 container.innerHTML = '<div class="bg-gray-50 rounded-lg p-4 border">' +
                                     '<div class="flex items-center gap-3 mb-3">' +
                                     '<div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center"><i class="fa-solid fa-user text-blue-600"></i></div>' +
                                     '<div><p class="font-bold text-gray-800">' + app.utils.escapeHTML(u.name || u.username) + '</p><p class="text-sm text-gray-500">@' + app.utils.escapeHTML(u.username || '') + '</p></div>' +
                                     '</div>' +
                                     '<p class="text-sm text-gray-600"><i class="fa-solid fa-shield-halved mr-1"></i>Tu rol: <strong>' + (u.role === 'admin' ? 'Administrador' : 'Usuario') + '</strong></p>' +
-                                    '<p class="text-xs text-gray-400 mt-2">La creación de usuarios y el cambio de roles están reservados a los administradores.</p>' +
+                                    '<p class="text-xs text-gray-400 mt-2">Las cuentas solo pueden ser creadas, editadas y gestionadas por los administradores.</p>' +
+                                    '<p class="text-xs text-gray-400 mt-1">Puedes cambiar tus propios datos y contraseña desde <strong>Mi Perfil</strong> (pulsa tu usuario en la cabecera).</p>' +
                                     adminsHtml +
                                     '</div>';
                                 return;
                             }
-                            
+
                             // Vista de administrador
                             container.innerHTML = '<p class="text-gray-400 text-sm mb-4"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Cargando usuarios...</p>';
-                            
+
                             const users = await app.firebase.loadUsers();
-                            
+
                             // --- Panel de creación de usuario ---
                             let html = '';
                             html += '<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">';
@@ -5659,16 +5908,15 @@
                             html += '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">';
                             html += '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Nombre completo</label><input type="text" id="new-user-name" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: María López"></div>';
                             html += '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Usuario (login)</label><input type="text" id="new-user-username" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: mlopez"></div>';
-                            html += '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Contraseña</label><input type="password" id="new-user-password" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Mínimo 6 caracteres"></div>';
+                            html += '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Contraseña</label><input type="password" id="new-user-password" autocomplete="new-password" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Mínimo 6 caracteres"></div>';
                             html += '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Rol</label><select id="new-user-role" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="user">Usuario</option><option value="admin">Administrador</option></select></div>';
                             html += '</div>';
-                            html += '<div class="flex items-center gap-3">';
-                            html += '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Tu contraseña (confirmar)</label><input type="password" id="admin-password-confirm" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Confirma tu contraseña de admin"></div>';
-                            html += '<div class="flex items-end"><button onclick="app.config.handleCreateUser()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-bold text-sm transition btn-primary ripple hover-lift whitespace-nowrap"><i class="fa-solid fa-user-plus mr-1"></i> Crear Usuario</button></div>';
+                            html += '<div class="flex justify-end">';
+                            html += '<button onclick="app.config.handleCreateUser()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-bold text-sm transition btn-primary ripple hover-lift whitespace-nowrap"><i class="fa-solid fa-user-plus mr-1"></i> Crear Usuario</button>';
                             html += '</div>';
                             html += '<p id="create-user-feedback" class="text-sm mt-2 hidden"></p>';
                             html += '</div>';
-                            
+
                             // --- Búsqueda y estadísticas ---
                             const adminCount = users.filter(u => u.role === 'admin' && u.status !== 'blocked').length;
                             html += '<div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-4">';
@@ -5682,10 +5930,10 @@
                             html += '</div>';
                             html += '<div class="relative"><i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i><input type="text" id="user-search-input" oninput="app.config.filterUsers()" class="border border-gray-300 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64" placeholder="Buscar por nombre o usuario..."></div>';
                             html += '</div>';
-                            
+
                             // --- Tabla de usuarios ---
                             if (users.length === 0) {
-                                html += '<div class="text-center py-8 text-gray-400"><i class="fa-solid fa-user-slash text-4xl mb-3"></i><p>No hay usuarios registrados.</p><p class="text-sm">Crea el primer usuario con el formulario superior o usa la pestaña de registro.</p></div>';
+                                html += '<div class="text-center py-8 text-gray-400"><i class="fa-solid fa-user-slash text-4xl mb-3"></i><p>No hay usuarios registrados.</p><p class="text-sm">Crea el primer usuario con el formulario superior.</p></div>';
                             } else {
                                 html += '<div class="overflow-x-auto rounded-lg border"><table class="w-full text-left text-sm border-collapse" id="users-table">';
                                 html += '<thead><tr class="bg-gray-100 text-gray-600 uppercase text-xs">';
@@ -5696,27 +5944,27 @@
                                 html += '<th class="p-3 border-b">Último acceso</th>';
                                 html += '<th class="p-3 border-b text-right">Acciones</th>';
                                 html += '</tr></thead><tbody id="users-table-body">';
-                                
+
                                 users.forEach(u => {
                                     const isCurrentUser = u.uid === (app.state.currentUser ? app.state.currentUser.uid : '');
                                     const status = u.status || 'active';
-                                    const statusBadge = status === 'active' 
+                                    const statusBadge = status === 'active'
                                         ? '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-bold">Activo</span>'
                                         : status === 'blocked'
                                         ? '<span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full font-bold">Bloqueado</span>'
                                         : '<span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full font-bold">Pendiente</span>';
-                                    
-                                    const lastLogin = u.lastLogin 
+
+                                    const lastLogin = u.lastLogin
                                         ? new Date(u.lastLogin).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                                         : '<span class="text-gray-400 italic">Nunca</span>';
-                                    
-                                    const createdDate = u.createdAt 
+
+                                    const createdDate = u.createdAt
                                         ? new Date(u.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
                                         : '';
-                                    
+
                                     html += '<tr class="border-b hover:bg-gray-50 user-row" data-search="' + (app.utils.escapeHTML(u.name || '') + ' ' + app.utils.escapeHTML(u.username || '')).toLowerCase() + '">';
-                                    html += '<td class="p-3"><div class="flex items-center gap-2"><div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-xs">' + (u.name || u.username || '?').charAt(0).toUpperCase() + '</div><div><span class="font-medium text-gray-800">@' + (u.username || '-') + '</span>' + (u.role === 'admin' ? ' <i class="fa-solid fa-crown text-yellow-500" title="Administrador"></i>' : '') + (isCurrentUser ? ' <span class="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded font-bold">Tú</span>' : '') + '</div></div></td>';
-                                    html += '<td class="p-3"><div><span class="font-medium">' + (u.name || '-') + '</span>' + (createdDate ? '<br><span class="text-xs text-gray-400">Creado: ' + createdDate + '</span>' : '') + '</div></td>';
+                                    html += '<td class="p-3"><div class="flex items-center gap-2"><div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-xs">' + app.utils.escapeHTML((u.name || u.username || '?').charAt(0).toUpperCase()) + '</div><div><span class="font-medium text-gray-800">@' + app.utils.escapeHTML(u.username || '-') + '</span>' + (u.role === 'admin' ? ' <i class="fa-solid fa-crown text-yellow-500" title="Administrador"></i>' : '') + (isCurrentUser ? ' <span class="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded font-bold">Tú</span>' : '') + '</div></div></td>';
+                                    html += '<td class="p-3"><div><span class="font-medium">' + app.utils.escapeHTML(u.name || '-') + '</span>' + (createdDate ? '<br><span class="text-xs text-gray-400">Creado: ' + createdDate + '</span>' : '') + '</div></td>';
                                     html += '<td class="p-3"><select onchange="app.firebase.updateUserRole(\'' + u.uid + '\', this.value)" class="border rounded px-2 py-1 text-sm focus:ring-1 focus:ring-blue-400" title="Cambiar entre administrador y usuario">';
                                     html += '<option value="admin" ' + (u.role === 'admin' ? 'selected' : '') + '>Administrador</option>';
                                     html += '<option value="user" ' + (u.role === 'user' ? 'selected' : '') + '>Usuario</option>';
@@ -5724,7 +5972,10 @@
                                     html += '<td class="p-3">' + statusBadge + '</td>';
                                     html += '<td class="p-3 text-xs text-gray-600">' + lastLogin + '</td>';
                                     html += '<td class="p-3 text-right"><div class="flex items-center justify-end gap-1">';
-                                    
+
+                                    // Editar: disponible para cualquier usuario (con protecciones)
+                                    html += '<button onclick="app.config.openEditUserModal(\'' + u.uid + '\')" class="text-blue-500 hover:text-blue-700 transition hover-scale p-1" title="Editar usuario"><i class="fa-solid fa-pen"></i></button>';
+
                                     if (!isCurrentUser) {
                                         if (status === 'blocked') {
                                             html += '<button onclick="app.firebase.unblockUser(\'' + u.uid + '\')" class="text-green-500 hover:text-green-700 transition hover-scale p-1" title="Desbloquear"><i class="fa-solid fa-lock-open"></i></button>';
@@ -5734,26 +5985,23 @@
                                             html += '<button onclick="app.firebase.blockUser(\'' + u.uid + '\')" class="text-orange-500 hover:text-orange-700 transition hover-scale p-1" title="Bloquear"><i class="fa-solid fa-ban"></i></button>';
                                         }
                                         html += '<button onclick="app.firebase.deleteUser(\'' + u.uid + '\')" class="text-red-500 hover:text-red-700 transition hover-scale p-1" title="Eliminar"><i class="fa-solid fa-trash"></i></button>';
-                                    } else {
-                                        html += '<span class="text-xs text-gray-400 italic">--</span>';
                                     }
-                                    
+
                                     html += '</div></td></tr>';
                                 });
-                                
+
                                 html += '</tbody></table></div>';
                             }
-                            
+
                             // --- Leyenda ---
                             html += '<div class="mt-4 flex flex-wrap gap-4 text-xs text-gray-500">';
                             html += '<span><i class="fa-solid fa-crown text-yellow-500 mr-1"></i>Corona: usuario administrador</span>';
-                            html += '<span><i class="fa-solid fa-user-gear mr-1 text-blue-500"></i>Desplegable Rol: cambia entre administrador y usuario</span>';
+                            html += '<span><i class="fa-solid fa-pen text-blue-500 mr-1"></i>Editar: nombre, usuario, rol y estado</span>';
                             html += '<span><i class="fa-solid fa-ban text-orange-500 mr-1"></i>Bloquear: Impide acceso al sistema</span>';
-                            html += '<span><i class="fa-solid fa-check-circle text-green-500 mr-1"></i>Aprobar: Activa cuenta pendiente</span>';
-                            html += '<span><i class="fa-solid fa-lock-open text-green-500 mr-1"></i>Desbloquear: Restaura acceso</span>';
                             html += '<span><i class="fa-solid fa-trash text-red-500 mr-1"></i>Eliminar: Borra del sistema</span>';
                             html += '</div>';
-                            
+                            html += '<p class="mt-3 text-xs text-gray-400"><i class="fa-solid fa-circle-info mr-1"></i>Cada usuario puede cambiar sus propios datos y contraseña desde <strong>Mi Perfil</strong> (chip de usuario de la cabecera).</p>';
+
                             container.innerHTML = html;
                         },
                         handleCreateUser: async function() {
@@ -5761,22 +6009,14 @@
                             const username = document.getElementById('new-user-username').value.trim().toLowerCase();
                             const password = document.getElementById('new-user-password').value;
                             const role = document.getElementById('new-user-role').value;
-                            const adminPass = document.getElementById('admin-password-confirm').value;
                             const feedback = document.getElementById('create-user-feedback');
-                            
-                            if (!adminPass) {
-                                feedback.textContent = 'Debes introducir tu contraseña de administrador para confirmar la operación.';
-                                feedback.className = 'text-sm mt-2 text-red-600 font-semibold';
-                                feedback.classList.remove('hidden');
-                                return;
-                            }
-                            
+
                             feedback.className = 'text-sm mt-2 text-blue-600 font-semibold';
                             feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Creando usuario... Esto puede tardar unos segundos.';
                             feedback.classList.remove('hidden');
-                            
+
                             const result = await app.firebase.createUser(name, username, password, role);
-                            
+
                             if (result.success) {
                                 feedback.textContent = result.message;
                                 feedback.className = 'text-sm mt-2 text-green-600 font-semibold';
@@ -5784,13 +6024,55 @@
                                 document.getElementById('new-user-name').value = '';
                                 document.getElementById('new-user-username').value = '';
                                 document.getElementById('new-user-password').value = '';
-                                document.getElementById('admin-password-confirm').value = '';
                                 document.getElementById('new-user-role').value = 'user';
                                 // Re-renderizar lista
                                 this.renderUsers();
                             } else {
                                 feedback.textContent = result.message;
                                 feedback.className = 'text-sm mt-2 text-red-600 font-semibold';
+                            }
+                        },
+                        // --- MODAL DE EDICIÓN DE USUARIO (solo administradores) ---
+                        openEditUserModal: async function(uid) {
+                            if (!app.state.currentUser || app.state.currentUser.role !== 'admin') {
+                                return app.views.notify('Esta operación requiere permisos de administrador', 'error');
+                            }
+                            const users = await app.firebase.loadUsers();
+                            const u = users.find(x => x.uid === uid);
+                            if (!u) return app.views.notify('El usuario ya no existe', 'error');
+
+                            document.getElementById('edit-user-uid').value = u.uid;
+                            document.getElementById('edit-user-name').value = u.name || '';
+                            document.getElementById('edit-user-username').value = u.username || '';
+                            document.getElementById('edit-user-role').value = u.role === 'admin' ? 'admin' : 'user';
+                            document.getElementById('edit-user-status').value = u.status || 'active';
+                            const errorEl = document.getElementById('edit-user-error');
+                            errorEl.classList.add('hidden');
+
+                            app.utils.openModal('modal-edit-user', this.closeEditUserModal);
+                        },
+                        closeEditUserModal: function() {
+                            app.utils.closeModal('modal-edit-user');
+                        },
+                        saveUserEdit: async function() {
+                            const uid = document.getElementById('edit-user-uid').value;
+                            const changes = {
+                                name: document.getElementById('edit-user-name').value,
+                                username: document.getElementById('edit-user-username').value,
+                                role: document.getElementById('edit-user-role').value,
+                                status: document.getElementById('edit-user-status').value
+                            };
+                            const errorEl = document.getElementById('edit-user-error');
+                            errorEl.classList.add('hidden');
+
+                            const result = await app.firebase.updateUserProfile(uid, changes);
+                            if (result.success) {
+                                this.closeEditUserModal();
+                                app.views.notify(result.message, 'success');
+                                this.renderUsers();
+                            } else {
+                                errorEl.textContent = result.message;
+                                errorEl.classList.remove('hidden');
                             }
                         },
                         filterUsers: function() {
@@ -5873,9 +6155,7 @@
                                 const tr = document.createElement('tr');
                                 tr.className = "border-b hover:bg-gray-50 transition-all duration-200 fade-in-element";
                                 tr.style.animationDelay = (index * 0.05) + 's';
-                                const subs = [];
-                                if(student.subjects.cyr) subs.push(student.subjects.cyr);
-                                if(student.subjects.tyd) subs.push(student.subjects.tyd);
+                                const subs = app.utils.studentSubjects(student);
                                 
                                 tr.innerHTML = '<td class="p-3 font-medium">' + app.utils.escapeHTML(student.name) + '</td>' +
                                     '<td class="p-3 text-sm text-gray-600">' + (app.utils.escapeHTML(student.group) || '-') + '</td>' +
