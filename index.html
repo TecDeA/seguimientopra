@@ -816,7 +816,39 @@
                                 <li>Guarda los cambios</li>
                             </ol>
                             <p class="text-sm text-green-600 mt-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i> <strong>Importante:</strong> Solo los criterios NO marcados formarán parte del plan de recuperación.</p>
+                            <div class="mt-3 pt-3 border-t border-green-200">
+                                <p class="font-semibold text-green-800"><i class="fa-solid fa-file-import mr-1"></i> Importación de criterios desde archivos .json o .csv</p>
+                                <p class="text-sm mt-1">Puedes importar directamente los criterios de evaluación del alumnado desde archivos <strong>.json</strong> o <strong>.csv</strong> exportados por Séneca (formatos <em>TODOS</em>, <em>APROBADOS</em>, <em>SUSPENDIDOS</em>, <em>NO EVALUADOS</em> o combinaciones). La aplicación detectará automáticamente:</p>
+                                <ul class="list-disc pl-5 text-sm mt-1 space-y-1">
+                                    <li>El <strong>alumno</strong> (por el nombre incluido en el archivo)</li>
+                                    <li>Las <strong>materias</strong> y el <strong>curso</strong> (a partir de los códigos de los criterios, p. ej. <code>CYR.3.1.1</code> → CYR3 - 3º ESO)</li>
+                                    <li>Los criterios <strong>aprobados</strong> (nota ≥ 5) → se marcan como superados con su calificación</li>
+                                    <li>Los criterios <strong>suspensos</strong> (nota &lt; 5) y <strong>no evaluados</strong> → pasan a ser objeto del programa de recuperación</li>
+                                </ul>
+                                <p class="text-xs text-gray-500 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> Si el alumno ya existe, podrás elegir entre actualizarlo o crear uno nuevo. Si no existe, se creará automáticamente.</p>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL: IMPORTAR CRITERIOS DESDE JSON / CSV -->
+            <div class="bg-white border-l-4 border-emerald-500 rounded-lg shadow p-4 mb-6 soft-shadow hover-lift">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div class="flex items-start gap-3">
+                        <div class="p-2.5 bg-emerald-100 rounded-lg text-emerald-600">
+                            <i class="fa-solid fa-file-import text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">Importar criterios de evaluación</h3>
+                            <p class="text-sm text-gray-500">Desde archivos <strong>.json</strong> o <strong>.csv</strong> exportados por Séneca. La aplicación determina automáticamente materias, curso, aprobados, suspensos y no evaluados.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <label class="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition btn-primary ripple hover-lift cursor-pointer whitespace-nowrap font-semibold text-sm">
+                            <i class="fa-solid fa-file-import"></i> Seleccionar archivo
+                            <input type="file" class="hidden" accept=".json,.csv" onchange="app.modules.program.importCriteriaFile(this)">
+                        </label>
                     </div>
                 </div>
             </div>
@@ -1423,6 +1455,71 @@
                 <div class="text-sm text-gray-500">
                     <i class="fa-solid fa-school mr-1"></i> IES Virgen de Villadiego - Tecnología
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: IMPORTAR CRITERIOS (PREVIEW) -->
+    <div id="modal-import-criteria" class="fixed inset-0 z-50 hidden opacity-0 pointer-events-none modal">
+        <div class="absolute inset-0 bg-black bg-opacity-50" onclick="app.modules.program.closeImportModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+            <h3 class="text-xl font-bold mb-1 text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-file-import text-emerald-600"></i> Importar criterios de evaluación
+            </h3>
+            <p class="text-xs text-gray-500 mb-4">Revisa los datos detectados y elige cómo aplicar la importación.</p>
+
+            <!-- Resumen de datos detectados -->
+            <div id="import-preview-body" class="space-y-4">
+                <!-- Renderizado por JS -->
+            </div>
+
+            <!-- Selección de acción -->
+            <div class="mt-6 pt-4 border-t">
+                <h4 class="font-bold text-sm text-gray-700 mb-2">¿Cómo deseas aplicar la importación?</h4>
+                <div id="import-action-new" class="mb-3 p-3 border-2 rounded-lg cursor-pointer hover:bg-emerald-50 transition-colors">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="radio" name="import-action" value="new" class="mt-1" onchange="app.modules.program.toggleImportAction('new')">
+                        <div>
+                            <span class="font-bold text-gray-800">Crear nuevo alumno</span>
+                            <p class="text-xs text-gray-500">Se creará un nuevo alumno con el nombre detectado: <strong id="import-new-name">--</strong></p>
+                        </div>
+                    </label>
+                    <div id="import-new-fields" class="hidden mt-3 ml-7 space-y-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Nombre completo</label>
+                                <input type="text" id="import-field-name" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-emerald-500" placeholder="Apellido, Nombre">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Grupo</label>
+                                <input type="text" id="import-field-group" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-emerald-500" placeholder="Ej: 3ºA">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="import-action-update" class="mb-3 p-3 border-2 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="radio" name="import-action" value="update" class="mt-1" onchange="app.modules.program.toggleImportAction('update')">
+                        <div class="flex-1">
+                            <span class="font-bold text-gray-800">Actualizar alumno existente</span>
+                            <p class="text-xs text-gray-500">Sustituye las materias y los criterios aprobados del alumno seleccionado.</p>
+                        </div>
+                    </label>
+                    <div id="import-update-fields" class="hidden mt-3 ml-7">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Selecciona el alumno</label>
+                        <select id="import-existing-select" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500">
+                            <option value="">-- Seleccionar --</option>
+                        </select>
+                        <p class="text-xs text-amber-600 mt-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Se reemplazarán las materias detectadas y los criterios aprobados para esas materias. Las actividades de recuperación existentes podrían quedar huérfanas si cambia de nivel (p. ej. de CYR2 a CYR3).</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t mt-4">
+                <button type="button" onclick="app.modules.program.closeImportModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition btn-primary ripple">Cancelar</button>
+                <button type="button" onclick="app.modules.program.applyImport()" class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition btn-primary ripple hover-lift font-semibold">
+                    <i class="fa-solid fa-check mr-1"></i> Aplicar importación
+                </button>
             </div>
         </div>
     </div>
@@ -2998,7 +3095,516 @@
                         app.data.saveLocal();
                         app.views.notify("Programa actualizado correctamente", "success");
                     },
-                    
+
+                    // ==================================================================
+                    // IMPORTACIÓN DE CRITERIOS DE EVALUACIÓN DESDE .json / .csv
+                    // ==================================================================
+                    // Datos en bruto del último archivo parseado, listos para aplicar
+                    // cuando el usuario confirma la acción en el modal de previsualización.
+                    pendingImport: null,
+
+                    // Punto de entrada: el usuario selecciona un archivo .json o .csv
+                    importCriteriaFile: function(input) {
+                        const file = input.files && input.files[0];
+                        if (!file) return;
+                        const self = this;
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                const text = e.target.result;
+                                const parsed = self._parseImportedFile(text, file.name);
+                                if (!parsed) {
+                                    app.views.notify('No se pudieron extraer criterios del archivo', 'error');
+                                    input.value = '';
+                                    return;
+                                }
+                                self._showImportPreview(parsed, file.name);
+                            } catch (err) {
+                                console.error('Error importando criterios:', err);
+                                app.views.notify('Error al leer el archivo: ' + (err && err.message || 'formato no válido'), 'error');
+                            } finally {
+                                input.value = '';
+                            }
+                        };
+                        reader.onerror = function() {
+                            app.views.notify('No se pudo leer el archivo', 'error');
+                            input.value = '';
+                        };
+                        reader.readAsText(file, 'UTF-8');
+                    },
+
+                    // Detecta el formato (JSON o CSV) y delega al parser adecuado.
+                    // Devuelve un objeto normalizado:
+                    //   { studentName, course, subjects: {cyr, tyd}, counts: {approved, failed, notEvaluated},
+                    //     approvedCriteria: {codigo: nota}, recoveryCodes: [codigo,...] }
+                    _parseImportedFile: function(text, filename) {
+                        const lowered = (filename || '').toLowerCase();
+                        let raw = null;
+                        if (lowered.endsWith('.json')) {
+                            raw = this._parseCriteriaJSON(text);
+                        } else if (lowered.endsWith('.csv')) {
+                            raw = this._parseCriteriaCSV(text);
+                        } else {
+                            // Intentar detectar por contenido
+                            const trimmed = text.trim();
+                            if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                                raw = this._parseCriteriaJSON(text);
+                            } else {
+                                raw = this._parseCriteriaCSV(text);
+                            }
+                        }
+                        if (!raw || !raw.criteria || raw.criteria.length === 0) return null;
+                        return this._classifyImportedCriteria(raw);
+                    },
+
+                    // Parser para JSON (estructura: {metadata, criteria:[{materia,codigo,descripcion,calificacion}]})
+                    _parseCriteriaJSON: function(text) {
+                        const data = JSON.parse(text);
+                        const result = { studentName: '', course: '', criteria: [] };
+                        // metadata
+                        if (data.metadata) {
+                            if (data.metadata.alumno) result.studentName = String(data.metadata.alumno).trim();
+                            if (Array.isArray(data.metadata.cursos) && data.metadata.cursos.length > 0) {
+                                result.course = String(data.metadata.cursos[0]).trim();
+                            } else if (typeof data.metadata.curso === 'string') {
+                                result.course = data.metadata.curso.trim();
+                            }
+                        }
+                        if (Array.isArray(data.criteria)) {
+                            result.criteria = data.criteria.map(c => ({
+                                materia: c.materia || '',
+                                codigo: (c.codigo || '').trim(),
+                                descripcion: c.descripcion || '',
+                                calificacion: c.calificacion !== undefined && c.calificacion !== null
+                                    ? String(c.calificacion) : ''
+                            })).filter(c => c.codigo);
+                        }
+                        return result;
+                    },
+
+                    // Parser para CSV: separador `;`, comilla doble, UTF-8 con BOM.
+                    // Cabecera esperada: Materia;Codigo;Descripcion;Calificacion;Alumno;Curso
+                    _parseCriteriaCSV: function(text) {
+                        // Eliminar BOM y normalizar saltos de línea
+                        let normalized = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+                        const lines = normalized.split('\n').filter(l => l.trim() !== '');
+                        if (lines.length < 2) return { studentName: '', course: '', criteria: [] };
+
+                        const parseLine = (line) => {
+                            const fields = [];
+                            let current = '';
+                            let inQuotes = false;
+                            for (let i = 0; i < line.length; i++) {
+                                const ch = line[i];
+                                if (inQuotes) {
+                                    if (ch === '"') {
+                                        if (line[i + 1] === '"') {
+                                            current += '"';
+                                            i++;
+                                        } else {
+                                            inQuotes = false;
+                                        }
+                                    } else {
+                                        current += ch;
+                                    }
+                                } else {
+                                    if (ch === '"') {
+                                        inQuotes = true;
+                                    } else if (ch === ';') {
+                                        fields.push(current);
+                                        current = '';
+                                    } else {
+                                        current += ch;
+                                    }
+                                }
+                            }
+                            fields.push(current);
+                            return fields;
+                        };
+
+                        const header = parseLine(lines[0]).map(h => h.trim().toLowerCase());
+                        const idxMateria = header.indexOf('materia');
+                        const idxCodigo = header.indexOf('codigo');
+                        const idxDesc = header.indexOf('descripcion');
+                        const idxCal = header.indexOf('calificacion');
+                        const idxAlu = header.indexOf('alumno');
+                        const idxCurso = header.indexOf('curso');
+
+                        // Si no encontramos la columna "Codigo", no podemos procesar
+                        if (idxCodigo === -1) {
+                            return { studentName: '', course: '', criteria: [] };
+                        }
+
+                        const result = { studentName: '', course: '', criteria: [] };
+                        for (let i = 1; i < lines.length; i++) {
+                            const cols = parseLine(lines[i]);
+                            const codigo = (cols[idxCodigo] || '').trim();
+                            if (!codigo) continue;
+                            const item = {
+                                materia: idxMateria >= 0 ? (cols[idxMateria] || '').trim() : '',
+                                codigo: codigo,
+                                descripcion: idxDesc >= 0 ? (cols[idxDesc] || '').trim() : '',
+                                calificacion: idxCal >= 0 ? (cols[idxCal] || '').trim() : ''
+                            };
+                            // Tomar el nombre del alumno y curso de la primera fila que los tenga
+                            if (!result.studentName && idxAlu >= 0 && (cols[idxAlu] || '').trim()) {
+                                result.studentName = (cols[idxAlu] || '').trim();
+                            }
+                            if (!result.course && idxCurso >= 0 && (cols[idxCurso] || '').trim()) {
+                                result.course = (cols[idxCurso] || '').trim();
+                            }
+                            result.criteria.push(item);
+                        }
+                        return result;
+                    },
+
+                    // Clasifica cada criterio en aprobado / suspenso / no evaluado,
+                    // determina las materias (CYR3, TYD3, ...) y agrupa los aprobados
+                    // con su calificación para añadirlos a passedCriteria.
+                    _classifyImportedCriteria: function(raw) {
+                        const result = {
+                            studentName: raw.studentName || '',
+                            course: raw.course || '',
+                            subjects: { cyr: '', tyd: '' },
+                            counts: { approved: 0, failed: 0, notEvaluated: 0 },
+                            approvedCriteria: {},  // codigo -> nota numérica
+                            recoveryCodes: [],     // códigos suspensos + no evaluados
+                            notEvaluatedCodes: [],
+                            failedWithGrade: {},   // codigo -> nota (solo para resumen)
+                            materiaNames: {},      // materia_code -> nombre legible
+                            unknownCodes: []       // códigos que no se reconocen en criteriaDB
+                        };
+
+                        raw.criteria.forEach(c => {
+                            const code = c.codigo;
+                            // Determinar materia_code (CYR3, TYD2, ...) a partir del código
+                            // Formato esperado: CYR.3.1.1 / TYD.2.5.3 ...
+                            const m = code.match(/^([A-Z]+)\.(\d+)\./);
+                            if (!m) {
+                                if (!result.unknownCodes.includes(code)) result.unknownCodes.push(code);
+                                return;
+                            }
+                            const subjectCode = m[1] + m[2]; // p. ej. CYR3
+                            // ¿Existe en criteriaDB?
+                            if (!criteriaDB[subjectCode]) {
+                                if (!result.unknownCodes.includes(code)) result.unknownCodes.push(code);
+                                return;
+                            }
+                            // Registrar nombre legible de la materia
+                            if (!result.materiaNames[subjectCode]) {
+                                result.materiaNames[subjectCode] = c.materia || '';
+                            }
+                            // Clasificar según calificación
+                            const cls = this._classifyCalificacion(c.calificacion);
+                            if (cls.status === 'approved') {
+                                result.counts.approved++;
+                                result.approvedCriteria[code] = cls.grade;
+                                // Asignar materia en subjects
+                                if (subjectCode.startsWith('CYR')) result.subjects.cyr = subjectCode;
+                                else if (subjectCode.startsWith('TYD')) result.subjects.tyd = subjectCode;
+                            } else if (cls.status === 'failed') {
+                                result.counts.failed++;
+                                result.recoveryCodes.push(code);
+                                result.failedWithGrade[code] = cls.grade;
+                                if (subjectCode.startsWith('CYR')) result.subjects.cyr = subjectCode;
+                                else if (subjectCode.startsWith('TYD')) result.subjects.tyd = subjectCode;
+                            } else {
+                                result.counts.notEvaluated++;
+                                result.recoveryCodes.push(code);
+                                result.notEvaluatedCodes.push(code);
+                                if (subjectCode.startsWith('CYR')) result.subjects.cyr = subjectCode;
+                                else if (subjectCode.startsWith('TYD')) result.subjects.tyd = subjectCode;
+                            }
+                        });
+
+                        return result;
+                    },
+
+                    // Clasifica una calificación textual en aprobado / suspenso / no evaluado
+                    _classifyCalificacion: function(calStr) {
+                        if (calStr === null || calStr === undefined) return { status: 'notEvaluated', grade: null };
+                        const trimmed = String(calStr).trim();
+                        if (!trimmed) return { status: 'notEvaluated', grade: null };
+                        if (/no\s*evaluado/i.test(trimmed)) return { status: 'notEvaluated', grade: null };
+                        if (/^n\.?\s*p/i.test(trimmed)) return { status: 'notEvaluated', grade: null };
+                        // Sustituir coma decimal y descartar todo lo que no sea dígito o punto
+                        const normalized = trimmed.replace(/\./g, '').replace(',', '.');
+                        // Si después de quitar puntos y dejar una coma como decimal solo queda un número
+                        const m = normalized.match(/-?\d+(\.\d+)?/);
+                        if (!m) return { status: 'notEvaluated', grade: null };
+                        // Caso especial: el valor contiene '/' (parece una fecha), lo tratamos como no evaluado
+                        if (/[\/]/.test(trimmed)) return { status: 'notEvaluated', grade: null };
+                        const num = parseFloat(m[0]);
+                        if (isNaN(num)) return { status: 'notEvaluated', grade: null };
+                        if (num >= 5) return { status: 'approved', grade: num };
+                        if (num > 0) return { status: 'failed', grade: num };
+                        // num === 0: lo consideramos "no evaluado" (la app trata 0 como ausencia de nota)
+                        return { status: 'notEvaluated', grade: null };
+                    },
+
+                    // Construye el HTML del modal de previsualización con el resumen
+                    _showImportPreview: function(parsed, filename) {
+                        this.pendingImport = parsed;
+                        const body = document.getElementById('import-preview-body');
+                        const nameEl = document.getElementById('import-new-name');
+                        const fieldName = document.getElementById('import-field-name');
+                        const fieldGroup = document.getElementById('import-field-group');
+                        const existingSelect = document.getElementById('import-existing-select');
+
+                        // Sugerir grupo a partir del curso detectado (p. ej. "3º de E.S.O." -> "3º ESO")
+                        let suggestedGroup = '';
+                        if (parsed.course) {
+                            const cm = parsed.course.match(/(\d+)/);
+                            if (cm) {
+                                suggestedGroup = cm[1] + 'º ESO';
+                            } else {
+                                suggestedGroup = parsed.course;
+                            }
+                        }
+
+                        // Resumen visual
+                        const subjectsArr = [];
+                        if (parsed.subjects.cyr) subjectsArr.push(parsed.subjects.cyr);
+                        if (parsed.subjects.tyd) subjectsArr.push(parsed.subjects.tyd);
+                        const materiaList = subjectsArr.length
+                            ? subjectsArr.map(s => {
+                                const name = parsed.materiaNames[s] || '';
+                                return `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-bold mr-1">${app.utils.escapeHTML(s)}${name ? ' <span class="font-normal opacity-70">(' + app.utils.escapeHTML(name) + ')</span>' : ''}</span>`;
+                            }).join('')
+                            : '<span class="text-gray-400 italic">Ninguna</span>';
+
+                        const total = parsed.counts.approved + parsed.counts.failed + parsed.counts.notEvaluated;
+                        body.innerHTML = `
+                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Archivo</div>
+                                <div class="text-sm font-mono break-all">${app.utils.escapeHTML(filename)}</div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                    <div class="text-xs text-blue-700 uppercase font-semibold mb-1">Alumno detectado</div>
+                                    <div class="text-sm font-bold text-gray-800">${app.utils.escapeHTML(parsed.studentName || 'No detectado')}</div>
+                                </div>
+                                <div class="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                                    <div class="text-xs text-purple-700 uppercase font-semibold mb-1">Curso / nivel</div>
+                                    <div class="text-sm font-bold text-gray-800">${app.utils.escapeHTML(parsed.course || 'No detectado')}</div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <div class="text-xs text-gray-500 uppercase font-semibold mb-2">Materias asignadas</div>
+                                <div class="text-sm">${materiaList}</div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="bg-green-50 p-3 rounded-lg border border-green-200 text-center">
+                                    <div class="text-2xl font-bold text-green-700">${parsed.counts.approved}</div>
+                                    <div class="text-xs text-green-700 font-semibold uppercase">Aprobados</div>
+                                    <div class="text-[10px] text-gray-500 mt-1">Se marcan como superados</div>
+                                </div>
+                                <div class="bg-red-50 p-3 rounded-lg border border-red-200 text-center">
+                                    <div class="text-2xl font-bold text-red-700">${parsed.counts.failed}</div>
+                                    <div class="text-xs text-red-700 font-semibold uppercase">Suspensos</div>
+                                    <div class="text-[10px] text-gray-500 mt-1">Objeto de recuperación</div>
+                                </div>
+                                <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 text-center">
+                                    <div class="text-2xl font-bold text-amber-700">${parsed.counts.notEvaluated}</div>
+                                    <div class="text-xs text-amber-700 font-semibold uppercase">No evaluados</div>
+                                    <div class="text-[10px] text-gray-500 mt-1">Objeto de recuperación</div>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-500 text-center">Total: <strong>${total}</strong> criterio(s) procesado(s) · ${parsed.recoveryCodes.length} formarán parte del programa de recuperación</div>
+                            ${parsed.unknownCodes.length > 0 ? `<div class="text-xs text-amber-700 bg-amber-50 border border-amber-200 p-2 rounded"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ${parsed.unknownCodes.length} criterio(s) no reconocido(s) en la base de datos (se omiten): ${app.utils.escapeHTML(parsed.unknownCodes.slice(0, 8).join(', '))}${parsed.unknownCodes.length > 8 ? '…' : ''}</div>` : ''}
+                        `;
+
+                        // Pre-rellenar campos "Crear nuevo alumno"
+                        nameEl.textContent = parsed.studentName || '(sin nombre)';
+                        fieldName.value = parsed.studentName || '';
+                        fieldGroup.value = suggestedGroup;
+
+                        // Rellenar desplegable de alumnos existentes
+                        existingSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
+                        const sorted = [...app.state.students].sort((a, b) => a.name.localeCompare(b.name));
+                        sorted.forEach(s => {
+                            const opt = document.createElement('option');
+                            opt.value = s.id;
+                            opt.textContent = s.name + (s.group ? ' (' + s.group + ')' : '');
+                            existingSelect.appendChild(opt);
+                        });
+
+                        // Si hay un alumno actualmente seleccionado en la vista de programa,
+                        // preseleccionarlo en el desplegable de actualización.
+                        const currentId = (this.currentStudent && this.currentStudent.id) || document.getElementById('program-student-select').value;
+                        if (currentId && app.state.students.find(s => s.id === currentId)) {
+                            existingSelect.value = currentId;
+                        }
+
+                        // Decidir acción por defecto:
+                        // - Si el nombre del archivo coincide con un alumno existente, preseleccionar "actualizar"
+                        // - En caso contrario, preseleccionar "crear nuevo"
+                        let matchedExisting = null;
+                        if (parsed.studentName) {
+                            const target = parsed.studentName.toLowerCase();
+                            matchedExisting = app.state.students.find(s => (s.name || '').toLowerCase() === target);
+                        }
+                        const radioNew = document.querySelector('input[name="import-action"][value="new"]');
+                        const radioUpdate = document.querySelector('input[name="import-action"][value="update"]');
+                        if (matchedExisting) {
+                            radioUpdate.checked = true;
+                            existingSelect.value = matchedExisting.id;
+                            this.toggleImportAction('update');
+                        } else {
+                            radioNew.checked = true;
+                            this.toggleImportAction('new');
+                        }
+
+                        app.utils.openModal('modal-import-criteria', this.closeImportModal);
+                    },
+
+                    // Muestra/oculta los campos adicionales según la acción seleccionada
+                    toggleImportAction: function(action) {
+                        const newFields = document.getElementById('import-new-fields');
+                        const updateFields = document.getElementById('import-update-fields');
+                        const radioNew = document.querySelector('input[name="import-action"][value="new"]');
+                        const radioUpdate = document.querySelector('input[name="import-action"][value="update"]');
+                        if (action === 'new') {
+                            radioNew.checked = true;
+                            newFields.classList.remove('hidden');
+                            updateFields.classList.add('hidden');
+                        } else {
+                            radioUpdate.checked = true;
+                            newFields.classList.add('hidden');
+                            updateFields.classList.remove('hidden');
+                        }
+                    },
+
+                    closeImportModal: function() {
+                        app.utils.closeModal('modal-import-criteria');
+                        // Limpiar el input file del panel (por si se reabre)
+                        const fileInput = document.querySelector('input[type="file"][onchange*="importCriteriaFile"]');
+                        if (fileInput) fileInput.value = '';
+                    },
+
+                    // Aplica la importación según la acción elegida en el modal
+                    applyImport: function() {
+                        if (!this.pendingImport) {
+                            app.views.notify('No hay datos de importación pendientes', 'error');
+                            return;
+                        }
+                        const action = (document.querySelector('input[name="import-action"]:checked') || {}).value;
+                        if (!action) {
+                            app.views.notify('Selecciona cómo aplicar la importación', 'error');
+                            return;
+                        }
+                        const data = this.pendingImport;
+                        let targetStudent = null;
+
+                        if (action === 'new') {
+                            const name = (document.getElementById('import-field-name').value || '').trim();
+                            const group = (document.getElementById('import-field-group').value || '').trim();
+                            if (!name) {
+                                app.views.notify('Indica el nombre del nuevo alumno', 'error');
+                                return;
+                            }
+                            // Crear alumno usando el mismo patrón que students.createStudent
+                            const id = 'stu_' + Date.now() + Math.floor(Math.random() * 1000);
+                            targetStudent = {
+                                id: id,
+                                name: name,
+                                group: group,
+                                subjects: { cyr: '', tyd: '' },
+                                passedCriteria: {},
+                                activities: []
+                            };
+                            app.state.students.push(targetStudent);
+                        } else {
+                            const id = document.getElementById('import-existing-select').value;
+                            if (!id) {
+                                app.views.notify('Selecciona el alumno a actualizar', 'error');
+                                return;
+                            }
+                            targetStudent = app.state.students.find(s => s.id === id);
+                            if (!targetStudent) {
+                                app.views.notify('El alumno seleccionado ya no existe', 'error');
+                                return;
+                            }
+                        }
+
+                        // --- Aplicar las materias y los criterios aprobados ---
+                        // Para cada track (cyr / tyd):
+                        //   - Si la importación detecta una materia nueva para ese track,
+                        //     primero limpia passedCriteria y grades de actividades de la
+                        //     materia antigua que tuviera asignada (si era distinta).
+                        //   - Luego asigna la nueva materia y vacía passedCriteria de esa
+                        //     nueva materia (por si hubiera entradas antiguas) antes de
+                        //     añadir los criterios aprobados importados.
+                        const tracks = [
+                            { key: 'cyr', subject: data.subjects.cyr },
+                            { key: 'tyd', subject: data.subjects.tyd }
+                        ];
+                        tracks.forEach(t => {
+                            if (!t.subject) return; // La importación no incluye esta materia
+                            const oldSubject = (targetStudent.subjects || {})[t.key] || '';
+                            if (oldSubject && oldSubject !== t.subject) {
+                                // Limpiar datos de la materia antigua
+                                const oldPrefix = this._subjectPrefix(oldSubject);
+                                if (oldPrefix) {
+                                    Object.keys(targetStudent.passedCriteria).forEach(k => {
+                                        if (k.startsWith(oldPrefix)) delete targetStudent.passedCriteria[k];
+                                    });
+                                    (targetStudent.activities || []).forEach(act => {
+                                        Object.keys(act.grades || {}).forEach(k => {
+                                            if (k.startsWith(oldPrefix)) delete act.grades[k];
+                                        });
+                                    });
+                                }
+                            }
+                            // Asignar nueva materia
+                            targetStudent.subjects[t.key] = t.subject;
+                            // Limpiar passedCriteria antiguas de esa materia (por si
+                            // el alumno ya tenía criterios aprobados de esa materia con
+                            // otros códigos o notas diferentes)
+                            const newPrefix = this._subjectPrefix(t.subject);
+                            if (newPrefix) {
+                                Object.keys(targetStudent.passedCriteria).forEach(k => {
+                                    if (k.startsWith(newPrefix)) delete targetStudent.passedCriteria[k];
+                                });
+                            }
+                        });
+
+                        // Añadir los criterios aprobados detectados
+                        Object.entries(data.approvedCriteria).forEach(([code, grade]) => {
+                            targetStudent.passedCriteria[code] = grade;
+                        });
+
+                        // Guardar y refrescar
+                        app.data.saveLocal();
+                        app.views.updateStudentList();
+                        app.modules.program.init();
+                        app.modules.activities.init();
+                        app.modules.evaluation.init();
+                        app.modules.reports.init();
+
+                        // Seleccionar el alumno recién creado/actualizado en la vista
+                        document.getElementById('program-student-select').value = targetStudent.id;
+                        this.currentStudent = targetStudent;
+                        this.loadStudent();
+
+                        this.closeImportModal();
+                        const approvedCount = Object.keys(data.approvedCriteria).length;
+                        const recoveryCount = data.recoveryCodes.length;
+                        app.views.notify(
+                            'Importación aplicada: ' + approvedCount + ' criterio(s) aprobado(s) y ' + recoveryCount + ' para recuperar.',
+                            'success'
+                        );
+                        this.pendingImport = null;
+                    },
+
+                    // Devuelve el prefijo de criterios para una materia (p. ej. CYR3 -> "CYR.3.")
+                    _subjectPrefix: function(subjectCode) {
+                        if (!subjectCode) return '';
+                        const m = subjectCode.match(/^([A-Z]+)(\d+)$/);
+                        if (!m) return '';
+                        return m[1] + '.' + m[2] + '.';
+                    },
+
                     // NUEVA FUNCIÓN: Borrar todos los datos de programa de recuperación
                     deleteAllProgramData: function() {
                         if (app.state.students.length === 0) {
@@ -6560,4 +7166,4 @@
 </script>
     </div> <!-- end app-content -->
 </body>
-</html>
+</html>
