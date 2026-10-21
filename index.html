@@ -993,7 +993,7 @@
                                 <li><strong>Marca como entregada:</strong> Activa el checkbox "Entregada/Evaluable"</li>
                                 <li><strong>Califica criterios:</strong> Introduce notas cuando la actividad esté entregada</li>
                                 <li><strong>Edita/Elimina:</strong> Modifica actividades existentes</li>
-                                <li><strong>Copiar actividad:</strong> Reutiliza actividades de otros alumnos del curso actual o de cursos anteriores siempre que encajen con los criterios a recuperar del alumno actual</li>
+                                <li><strong>Copiar actividad:</strong> Reutiliza actividades de otros alumnos del curso actual o de cursos anteriores siempre que encajen con los criterios a recuperar del alumno actual. Puedes <strong>buscar por nombre de actividad, materia o criterio de evaluación</strong>, y combinar todos los cursos con un solo clic.</li>
                             </ul>
                             <p class="text-sm text-yellow-600 mt-2"><i class="fa-solid fa-bell mr-1"></i> <strong>Alerta:</strong> El sistema avisará si quedan criterios sin asignar a actividades.</p>
                         </div>
@@ -1023,7 +1023,7 @@
                             <input type="checkbox" id="lock-override" onchange="app.modules.activities.toggleLockOverride()">
                             <label for="lock-override">🔓 Desbloquear Evaluación</label>
                         </div>
-                        <button onclick="app.modules.activities.openCopyModal()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 shadow transition btn-primary ripple hover-lift" title="Copia actividades de otros alumnos o de cursos anteriores">
+                        <button onclick="app.modules.activities.openCopyModal()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 shadow transition btn-primary ripple hover-lift" title="Busca y copia actividades de otros alumnos o de cursos anteriores, por materia o criterio">
                             <i class="fa-solid fa-copy mr-2"></i> Copiar Actividad
                         </button>
                         <button onclick="app.modules.activities.openModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow transition btn-primary ripple hover-lift">
@@ -1606,7 +1606,7 @@
         <div class="absolute inset-0 bg-black bg-opacity-50" onclick="app.modules.activities.closeCopyModal()"></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6">
             <h3 class="text-2xl font-bold mb-1">Copiar actividades de otros alumnos o cursos anteriores</h3>
-            <p class="text-sm text-gray-500 mb-4">Selecciona el curso de origen y las actividades a copiar. Solo se muestran las actividades compatibles con las materias del alumno actual y con criterios pendientes de recuperar.</p>
+            <p class="text-sm text-gray-500 mb-4">Selecciona el curso de origen (o activa "Buscar también en cursos anteriores") y aplica filtros por nombre, materia o criterio. Solo se muestran las actividades compatibles con las materias del alumno actual y con criterios pendientes de recuperar.</p>
 
             <!-- Selector de curso de origen -->
             <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg mb-3 flex flex-col md:flex-row md:items-center gap-3">
@@ -1615,6 +1615,44 @@
                     <!-- Renderizado por JS -->
                 </select>
                 <span id="copy-source-status" class="text-xs text-gray-500 whitespace-nowrap"></span>
+            </div>
+
+            <!-- Panel de búsqueda -->
+            <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-3 space-y-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass text-blue-600"></i>
+                    <span class="font-bold text-sm text-blue-800">Búsqueda y filtros</span>
+                    <button type="button" onclick="app.modules.activities._resetCopySearchFilter()" class="ml-auto text-xs text-blue-600 hover:text-blue-800 hover:underline">Limpiar filtros</button>
+                </div>
+                <!-- Buscar por nombre de actividad -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nombre de la actividad (texto libre)</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2 text-gray-400 text-sm"></i>
+                        <input type="text" id="copy-search-name" class="w-full border border-gray-300 rounded pl-9 pr-2 py-1 text-sm focus:ring-2 focus:ring-blue-500" placeholder="Ej: Ejercicio de programación" oninput="app.modules.activities._applyCopySearchFilter()">
+                    </div>
+                </div>
+                <!-- Filtrar por materia -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Materia (solo las pendientes de recuperar por el alumno)</label>
+                    <div class="flex gap-4 flex-wrap" id="copy-filter-subject-radios">
+                        <!-- Renderizado por JS según las materias del alumno -->
+                    </div>
+                </div>
+                <!-- Filtrar por criterio -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Criterio de evaluación (solo los pendientes de recuperar)</label>
+                    <select id="copy-filter-criterion" class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500" onchange="app.modules.activities._applyCopySearchFilter()">
+                        <option value="">Todos los criterios</option>
+                    </select>
+                </div>
+                <!-- Buscar en todos los cursos -->
+                <div class="pt-2 border-t border-blue-200">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer">
+                        <input type="checkbox" id="copy-search-all-courses" onchange="app.modules.activities._toggleSearchAllCourses(this.checked)">
+                        <span><i class="fa-solid fa-globe text-blue-600 mr-1"></i>Buscar también en cursos anteriores (combina todos los cursos cargados)</span>
+                    </label>
+                </div>
             </div>
 
             <div class="mb-4">
@@ -4316,6 +4354,17 @@
                             courseSelect.appendChild(opt);
                         });
 
+                        // Reiniciar los campos del panel de búsqueda
+                        document.getElementById('copy-search-name').value = '';
+                        document.getElementById('copy-search-all-courses').checked = false;
+                        courseSelect.disabled = false;
+
+                        // Poblar los filtros por materia y por criterio con los
+                        // datos del alumno actual (solo sus materias y criterios
+                        // pendientes de recuperar).
+                        this._populateSubjectFilter();
+                        this._populateCriterionFilter();
+
                         // Deseleccionar "seleccionar todas"
                         document.getElementById('select-all-copy').checked = false;
 
@@ -4325,13 +4374,102 @@
                         app.utils.openModal('modal-copy-activities', this.closeCopyModal);
                     },
 
-                    // Carga (desde Firebase o caché) los alumnos de un curso anterior
-                    // y refresca la lista de actividades del modal.
-                    changeCopySourceCourse: function(courseYear) {
-                        const statusEl = document.getElementById('copy-source-status');
-                        const listDiv = document.getElementById('copy-activities-list');
+                    // Construye los radio buttons de filtrado por materia a partir
+                    // de las materias asignadas al alumno actual.
+                    // Solo se muestran las materias que el alumno tiene asignadas
+                    // (es decir, las que tiene pendientes de recuperar).
+                    _populateSubjectFilter: function() {
+                        const container = document.getElementById('copy-filter-subject-radios');
+                        if (!container) return;
+                        container.innerHTML = '';
 
-                        // Curso actual: usar datos en memoria
+                        if (!this.currentStudent) return;
+                        const subs = app.utils.studentSubjects(this.currentStudent);
+
+                        // Etiqueta legible para cada materia
+                        const subjectLabels = {
+                            CYR1: 'CYR - 1º ESO', CYR2: 'CYR - 2º ESO', CYR3: 'CYR - 3º ESO',
+                            TYD2: 'TYD - 2º ESO', TYD3: 'TYD - 3º ESO'
+                        };
+
+                        // Opción "Todas" siempre presente
+                        const allLabel = document.createElement('label');
+                        allLabel.className = 'flex items-center gap-1 text-sm cursor-pointer';
+                        allLabel.innerHTML = '<input type="radio" name="copy-filter-subject" value="all" checked onchange="app.modules.activities._applyCopySearchFilter()"><span>Todas</span>';
+                        container.appendChild(allLabel);
+
+                        // Una opción por cada materia asignada
+                        subs.forEach(subCode => {
+                            const lbl = document.createElement('label');
+                            lbl.className = 'flex items-center gap-1 text-sm cursor-pointer';
+                            const labelText = subjectLabels[subCode] || subCode;
+                            lbl.innerHTML = '<input type="radio" name="copy-filter-subject" value="' + app.utils.escapeHTML(subCode) + '" onchange="app.modules.activities._applyCopySearchFilter()"><span>' + app.utils.escapeHTML(labelText) + '</span>';
+                            container.appendChild(lbl);
+                        });
+                    },
+
+                    // Construye el desplegable de filtrado por criterio con los
+                    // criterios pendientes de recuperar del alumno actual.
+                    _populateCriterionFilter: function() {
+                        const select = document.getElementById('copy-filter-criterion');
+                        if (!select) return;
+                        select.innerHTML = '<option value="">Todos los criterios</option>';
+
+                        if (!this.currentStudent) return;
+
+                        const subs = app.utils.studentSubjects(this.currentStudent);
+                        const passed = this.currentStudent.passedCriteria || {};
+
+                        subs.forEach(subCode => {
+                            const criteria = criteriaDB[subCode] || [];
+                            // Agrupar las opciones bajo la materia usando un optgroup
+                            const group = document.createElement('optgroup');
+                            group.label = subCode;
+                            criteria.forEach(c => {
+                                // Solo criterios pendientes de recuperar (no aprobados)
+                                if (passed.hasOwnProperty(c.code)) return;
+                                const opt = document.createElement('option');
+                                opt.value = c.code;
+                                // Texto: código + descripción recortada
+                                const shortDesc = c.desc.length > 60 ? c.desc.substring(0, 60) + '…' : c.desc;
+                                opt.textContent = c.code + ' — ' + shortDesc;
+                                opt.title = c.desc; // descripción completa al pasar el ratón
+                                group.appendChild(opt);
+                            });
+                            if (group.children.length > 0) select.appendChild(group);
+                        });
+                    },
+
+                    // Lee los valores actuales de los filtros del modal y refresca
+                    // la lista de actividades aplicándolos.
+                    _applyCopySearchFilter: function() {
+                        if (!this.currentStudent) return;
+
+                        const searchAll = document.getElementById('copy-search-all-courses').checked;
+                        const courseSelect = document.getElementById('copy-source-course');
+                        const statusEl = document.getElementById('copy-source-status');
+
+                        if (searchAll) {
+                            // Cargar (o usar caché de) todos los cursos y combinarlos.
+                            // Mostrar indicador de carga mientras se cargan los cursos
+                            // que aún no estén en caché.
+                            const coursesToLoad = this._getCoursesNotCached();
+                            if (coursesToLoad.length > 0 && statusEl) {
+                                statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Cargando cursos anteriores...';
+                            }
+                            this._loadAllCoursesStudentsAsync().then(combined => {
+                                if (statusEl) statusEl.textContent = combined.length + ' alumno(s) en ' + ((app.state.courses || []).length) + ' curso(s)';
+                                this._renderCopyActivitiesList('all', combined);
+                            }).catch(err => {
+                                console.error('Error cargando todos los cursos:', err);
+                                if (statusEl) statusEl.textContent = 'Error';
+                                app.views.notify('Error al cargar cursos anteriores', 'error');
+                            });
+                            return;
+                        }
+
+                        // Modo "un solo curso": usar el curso seleccionado
+                        const courseYear = courseSelect.value;
                         const current = app.state.currentCourse || app.firebase.getDefaultCourse();
                         if (courseYear === current) {
                             if (statusEl) statusEl.textContent = '';
@@ -4339,7 +4477,6 @@
                             return;
                         }
 
-                        // ¿Cacheado?
                         if (this._cachedCoursesStudents[courseYear]) {
                             if (statusEl) statusEl.textContent = this._cachedCoursesStudents[courseYear].length + ' alumno(s) cacheados';
                             this._renderCopyActivitiesList(courseYear, this._cachedCoursesStudents[courseYear]);
@@ -4347,12 +4484,10 @@
                         }
 
                         // Cargar desde Firebase
-                        if (statusEl) {
-                            statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Cargando alumnos...';
-                        }
+                        if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Cargando alumnos...';
+                        const listDiv = document.getElementById('copy-activities-list');
                         listDiv.innerHTML = '<p class="text-sm text-gray-500 italic text-center p-2">Cargando alumnos del curso ' + app.utils.escapeHTML(courseYear) + '...</p>';
-
-                        app.modules.activities._loadCourseStudentsAsync(courseYear).then(students => {
+                        this._loadCourseStudentsAsync(courseYear).then(students => {
                             this._cachedCoursesStudents[courseYear] = students;
                             if (statusEl) statusEl.textContent = students.length + ' alumno(s)';
                             this._renderCopyActivitiesList(courseYear, students);
@@ -4361,6 +4496,53 @@
                             listDiv.innerHTML = '<p class="text-sm text-red-600 italic text-center p-2">Error al cargar los alumnos del curso ' + app.utils.escapeHTML(courseYear) + '</p>';
                             if (statusEl) statusEl.textContent = 'Error';
                         });
+                    },
+
+                    // Devuelve la lista de cursos disponibles que aún no están en
+                    // la caché local (excluyendo el curso actual, que está en memoria).
+                    _getCoursesNotCached: function() {
+                        const current = app.state.currentCourse || app.firebase.getDefaultCourse();
+                        return (app.state.courses || []).filter(c => c !== current && !this._cachedCoursesStudents[c]);
+                    },
+
+                    // Carga asíncrona de los alumnos de todos los cursos disponibles
+                    // (usando caché donde sea posible) y los combina en un único
+                    // array. Cada alumno recibe un campo `_sourceCourse` para saber
+                    // de qué curso procede al mostrarlo y al copiarlo.
+                    _loadAllCoursesStudentsAsync: async function() {
+                        const current = app.state.currentCourse || app.firebase.getDefaultCourse();
+                        const courses = (app.state.courses || []).slice();
+                        const combined = [];
+
+                        // Curso actual: usar datos en memoria
+                        app.state.students.forEach(s => {
+                            combined.push(Object.assign({}, s, { _sourceCourse: current }));
+                        });
+
+                        // Cursos anteriores: cargar desde Firebase o caché
+                        for (const courseYear of courses) {
+                            if (courseYear === current) continue;
+                            let students = this._cachedCoursesStudents[courseYear];
+                            if (!students) {
+                                students = await this._loadCourseStudentsAsync(courseYear);
+                                this._cachedCoursesStudents[courseYear] = students;
+                            }
+                            students.forEach(s => {
+                                combined.push(Object.assign({}, s, { _sourceCourse: courseYear }));
+                            });
+                        }
+
+                        return combined;
+                    },
+
+                    // Carga (desde Firebase o caché) los alumnos de un curso anterior
+                    // y refresca la lista de actividades del modal.
+                    changeCopySourceCourse: function(courseYear) {
+                        // Si la búsqueda en todos los cursos está activa, el desplegable
+                        // está deshabilitado y no debe dispararse la recarga.
+                        const searchAll = document.getElementById('copy-search-all-courses');
+                        if (searchAll && searchAll.checked) return;
+                        this._applyCopySearchFilter();
                     },
 
                     // Carga asíncrona de los alumnos de un curso desde Firebase,
@@ -4382,8 +4564,38 @@
                         }
                     },
 
+                    // Activa/desactiva el modo "buscar en todos los cursos".
+                    // Cuando se activa, se deshabilita el selector de curso y se
+                    // dispara la carga combinada de todos los cursos.
+                    _toggleSearchAllCourses: function(enabled) {
+                        const courseSelect = document.getElementById('copy-source-course');
+                        const statusEl = document.getElementById('copy-source-status');
+                        if (enabled) {
+                            courseSelect.disabled = true;
+                            if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Cargando todos los cursos...';
+                        } else {
+                            courseSelect.disabled = false;
+                            if (statusEl) statusEl.textContent = '';
+                        }
+                        this._applyCopySearchFilter();
+                    },
+
+                    // Limpia los filtros del panel de búsqueda y refresca la lista.
+                    _resetCopySearchFilter: function() {
+                        const nameInput = document.getElementById('copy-search-name');
+                        if (nameInput) nameInput.value = '';
+                        const radios = document.getElementsByName('copy-filter-subject');
+                        for (const r of radios) {
+                            if (r.value === 'all') { r.checked = true; break; }
+                        }
+                        const critSelect = document.getElementById('copy-filter-criterion');
+                        if (critSelect) critSelect.value = '';
+                        this._applyCopySearchFilter();
+                    },
+
                     // Pinta la lista de actividades compatibles con el alumno actual
-                    // a partir de los alumnos de un curso dado.
+                    // a partir de los alumnos de un curso dado (o combinados si se
+                    // activó el modo "todos los cursos").
                     _renderCopyActivitiesList: function(courseYear, students) {
                         const listDiv = document.getElementById('copy-activities-list');
                         listDiv.innerHTML = '';
@@ -4394,8 +4606,18 @@
 
                         if (!this.currentStudent) return;
 
+                        // === Leer los filtros de búsqueda actuales ===
+                        const nameInput = document.getElementById('copy-search-name');
+                        const nameQuery = (nameInput && nameInput.value || '').trim().toLowerCase();
+                        const subjectRadio = document.querySelector('input[name="copy-filter-subject"]:checked');
+                        const subjectFilter = subjectRadio ? subjectRadio.value : 'all'; // 'all' | 'CYR3' | 'TYD3' | ...
+                        const critSelect = document.getElementById('copy-filter-criterion');
+                        const criterionFilter = critSelect ? critSelect.value : '';
+                        const searchAll = document.getElementById('copy-search-all-courses').checked;
+
                         // Materias y criterios disponibles para el alumno actual
                         const currentSubjects = app.utils.studentSubjects(this.currentStudent);
+                        // Códigos pendientes de recuperar y no cubiertos todavía
                         const currentRecoveryCodes = new Set(this.getUnassignedCriteria(this.currentStudent));
                         // Códigos ya cubiertos por actividades existentes del alumno actual:
                         // se excluyen para no duplicar trabajo ya hecho.
@@ -4404,26 +4626,48 @@
                             Object.keys(act.grades || {}).forEach(c => currentAssignedCodes.add(c));
                         });
 
-                        // Recopilar actividades compatibles
+                        // Aplicar filtro por materia: si el usuario eligió una materia
+                        // concreta, solo se muestran actividades de alumnos que tengan
+                        // ESE subjectCode asignado.
+                        const filteredSubjects = (subjectFilter === 'all')
+                            ? currentSubjects
+                            : currentSubjects.filter(s => s === subjectFilter);
+
+                        // Recopilar actividades compatibles aplicando todos los filtros
                         const allActivities = [];
                         students.forEach(student => {
                             // Saltar al propio alumno actual (mismo id solo en curso actual)
                             if (student.id === this.currentStudent.id) return;
 
                             const studentSubjects = app.utils.studentSubjects(student);
-                            const hasCompatibleSubjects = studentSubjects.some(sub => currentSubjects.includes(sub));
+                            // Si el usuario filtró por materia concreta, exigir que el
+                            // alumno origen la tenga asignada; si no, basta con que tenga
+                            // alguna de las materias del alumno actual.
+                            const hasCompatibleSubjects = filteredSubjects.length > 0
+                                ? filteredSubjects.some(sub => studentSubjects.includes(sub))
+                                : studentSubjects.some(sub => currentSubjects.includes(sub));
                             if (!hasCompatibleSubjects) return;
 
                             (student.activities || []).forEach((activity, idx) => {
-                                // Filtrar por nombre+fecha para no duplicar actividades existentes
+                                // Filtro por nombre (búsqueda libre, case-insensitive)
+                                if (nameQuery) {
+                                    const actName = (activity.name || '').toLowerCase();
+                                    if (!actName.includes(nameQuery)) return;
+                                }
+
+                                // Filtro por nombre+fecha para no duplicar actividades existentes
                                 const isDuplicate = (this.currentStudent.activities || []).some(a =>
                                     a.name === activity.name && a.date === activity.date
                                 );
                                 if (isDuplicate) return;
 
+                                // Filtro por criterio específico: si el usuario eligió un
+                                // criterio, la actividad tiene que incluirlo en sus grades.
+                                const activityCodes = Object.keys(activity.grades || {});
+                                if (criterionFilter && !activityCodes.includes(criterionFilter)) return;
+
                                 // Comprobar si la actividad tiene al menos un criterio
                                 // que el alumno actual deba recuperar y aún no tenga asignado.
-                                const activityCodes = Object.keys(activity.grades || {});
                                 const hasRecoverableCode = activityCodes.some(code =>
                                     currentRecoveryCodes.has(code) && !currentAssignedCodes.has(code)
                                 );
@@ -4433,26 +4677,41 @@
                                     studentId: student.id,
                                     studentName: student.name,
                                     activityIndex: idx,
-                                    activity: activity
+                                    activity: activity,
+                                    sourceCourse: student._sourceCourse || courseYear
                                 });
                             });
                         });
 
                         if (allActivities.length === 0) {
-                            listDiv.innerHTML = '<p class="text-sm text-gray-500 italic text-center p-2">No hay actividades compatibles para copiar en este curso.</p>';
+                            listDiv.innerHTML = '<p class="text-sm text-gray-500 italic text-center p-2">No se encontraron actividades con los filtros aplicados.</p>';
                             return;
                         }
 
-                        // Agrupar por alumno
+                        // Mostrar el total encontrado y un resumen del filtro activo
+                        const summaryEl = document.createElement('div');
+                        summaryEl.className = 'text-xs text-gray-600 italic mb-2';
+                        const filterParts = [];
+                        if (nameQuery) filterParts.push('nombre contiene "' + app.utils.escapeHTML(nameQuery) + '"');
+                        if (subjectFilter !== 'all') filterParts.push('materia = ' + app.utils.escapeHTML(subjectFilter));
+                        if (criterionFilter) filterParts.push('criterio = ' + app.utils.escapeHTML(criterionFilter));
+                        const filterText = filterParts.length ? 'Filtro: ' + filterParts.join(' · ') : 'Sin filtros activos';
+                        summaryEl.textContent = allActivities.length + ' actividad(es) encontrada(s) · ' + filterText;
+                        listDiv.appendChild(summaryEl);
+
+                        // Agrupar por alumno (y por curso si se busca en todos)
                         const grouped = {};
                         allActivities.forEach(item => {
-                            (grouped[item.studentName] = grouped[item.studentName] || []).push(item);
+                            const key = searchAll
+                                ? (item.studentName + ' [' + item.sourceCourse + ']')
+                                : item.studentName;
+                            (grouped[key] = grouped[key] || []).push(item);
                         });
 
-                        Object.entries(grouped).forEach(([studentName, items]) => {
+                        Object.entries(grouped).forEach(([groupKey, items]) => {
                             const header = document.createElement('div');
                             header.className = 'font-bold text-gray-700 text-sm mt-2 mb-1 pb-1 border-b';
-                            header.textContent = 'Alumno: ' + studentName;
+                            header.textContent = 'Alumno: ' + groupKey;
                             listDiv.appendChild(header);
 
                             items.forEach((item, idx) => {
@@ -4475,7 +4734,8 @@
                                 div.innerHTML =
                                     '<input type="checkbox" class="copy-act-check mt-1" id="copy-act-' + app.utils.escapeHTML(item.studentId) + '-' + idx + '" '
                                           + 'data-student-id="' + app.utils.escapeHTML(item.studentId) + '" '
-                                          + 'data-activity-index="' + item.activityIndex + '">'
+                                          + 'data-activity-index="' + item.activityIndex + '" '
+                                          + 'data-source-course="' + app.utils.escapeHTML(item.sourceCourse) + '">'
                                   + '<label for="copy-act-' + app.utils.escapeHTML(item.studentId) + '-' + idx + '" class="flex-1 cursor-pointer">'
                                           + '<span class="font-bold text-gray-800">' + app.utils.escapeHTML(act.name) + '</span>'
                                           + '<span class="text-sm text-gray-600 ml-2">(' + app.utils.escapeHTML(act.date) + ')</span>'
@@ -4509,15 +4769,17 @@
                             return;
                         }
 
-                        // Resolver el curso de origen actual para saber de dónde sacar
-                        // los alumnos cuando procedan de un curso anterior.
-                        const courseSelect = document.getElementById('copy-source-course');
-                        const sourceCourse = courseSelect ? courseSelect.value : null;
-                        const current = app.state.currentCourse || app.firebase.getDefaultCourse();
-                        let sourceStudents = app.state.students; // Por defecto, curso actual
-                        if (sourceCourse && sourceCourse !== current) {
-                            sourceStudents = this._cachedCoursesStudents[sourceCourse] || [];
-                        }
+                        // Construir un pool combinado con todos los alumnos de todos
+                        // los cursos cacheados (más el actual) para poder resolver
+                        // el alumno origen por ID, venga del curso que venga.
+                        const sourceStudentsPool = app.state.students.slice();
+                        Object.values(this._cachedCoursesStudents || {}).forEach(arr => {
+                            if (Array.isArray(arr)) {
+                                arr.forEach(s => {
+                                    if (!sourceStudentsPool.find(x => x.id === s.id)) sourceStudentsPool.push(s);
+                                });
+                            }
+                        });
 
                         // Códigos que el alumno actual necesita recuperar y aún no
                         // tiene cubiertos por ninguna actividad existente
@@ -4530,7 +4792,7 @@
                             const studentId = cb.getAttribute('data-student-id');
                             const activityIndex = parseInt(cb.getAttribute('data-activity-index'));
 
-                            const sourceStudent = sourceStudents.find(s => s.id === studentId);
+                            const sourceStudent = sourceStudentsPool.find(s => s.id === studentId);
                             if (!sourceStudent || !sourceStudent.activities || !sourceStudent.activities[activityIndex]) {
                                 skippedCount++;
                                 return;
