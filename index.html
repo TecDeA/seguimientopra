@@ -818,12 +818,18 @@
                             <p class="text-sm text-green-600 mt-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i> <strong>Importante:</strong> Solo los criterios NO marcados formarán parte del plan de recuperación.</p>
                             <div class="mt-3 pt-3 border-t border-green-200">
                                 <p class="font-semibold text-green-800"><i class="fa-solid fa-file-import mr-1"></i> Importación de criterios desde archivos .json o .csv</p>
-                                <p class="text-sm mt-1">Puedes importar directamente los criterios de evaluación del alumnado desde archivos <strong>.json</strong> o <strong>.csv</strong> exportados por Séneca (formatos <em>TODOS</em>, <em>APROBADOS</em>, <em>SUSPENDIDOS</em>, <em>NO EVALUADOS</em> o combinaciones). La aplicación detectará automáticamente:</p>
+                                <p class="text-sm mt-1">Puedes importar directamente los criterios de evaluación del alumnado desde archivos <strong>.json</strong> o <strong>.csv</strong> exportados por Séneca. La aplicación detectará automáticamente:</p>
                                 <ul class="list-disc pl-5 text-sm mt-1 space-y-1">
                                     <li>El <strong>alumno</strong> (por el nombre incluido en el archivo)</li>
                                     <li>Las <strong>materias</strong> y el <strong>curso</strong> (a partir de los códigos de los criterios, p. ej. <code>CYR.3.1.1</code> → CYR3 - 3º ESO)</li>
-                                    <li>Los criterios <strong>aprobados</strong> (nota ≥ 5) → se marcan como superados con su calificación</li>
-                                    <li>Los criterios <strong>suspensos</strong> (nota &lt; 5) y <strong>no evaluados</strong> → pasan a ser objeto del programa de recuperación</li>
+                                    <li>Los criterios <strong>aprobados</strong> → se marcan como superados <strong>con el check ya activado</strong> para que no tengas que hacerlo a mano</li>
+                                    <li>Los criterios <strong>suspensos</strong> y <strong>no evaluados</strong> → pasan a ser objeto del programa de recuperación</li>
+                                </ul>
+                                <p class="text-xs text-gray-600 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> La detección de aprobados depende del nombre del archivo:</p>
+                                <ul class="list-disc pl-5 text-xs text-gray-600 mt-1 space-y-1">
+                                    <li><strong>TODOS</strong> en el nombre → aprobados = los criterios con calificación ≥ 5</li>
+                                    <li><strong>APROB.</strong> en el nombre → aprobados = todos los criterios del archivo</li>
+                                    <li><strong>SUSP</strong> + <strong>NoEVAL</strong> simultáneos → aprobados = los que <strong>FALTAN</strong> en el archivo (se infieren y se marcan con nota mínima 5)</li>
                                 </ul>
                                 <p class="text-xs text-gray-500 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> Si el alumno ya existe, podrás elegir entre actualizarlo o crear uno nuevo. Si no existe, se creará automáticamente.</p>
                             </div>
@@ -3156,7 +3162,7 @@
                             }
                         }
                         if (!raw || !raw.criteria || raw.criteria.length === 0) return null;
-                        return this._classifyImportedCriteria(raw);
+                        return this._classifyImportedCriteria(raw, filename);
                     },
 
                     // Parser para JSON (estructura: {metadata, criteria:[{materia,codigo,descripcion,calificacion}]})
@@ -3263,7 +3269,17 @@
                     // Clasifica cada criterio en aprobado / suspenso / no evaluado,
                     // determina las materias (CYR3, TYD3, ...) y agrupa los aprobados
                     // con su calificación para añadirlos a passedCriteria.
-                    _classifyImportedCriteria: function(raw) {
+                    //
+                    // El modo de clasificación se deduce del nombre del archivo:
+                    //   - "TODOS": el archivo incluye todos los criterios → los
+                    //     aprobados se identifican por su calificación (≥ 5).
+                    //   - "APROB.": el archivo incluye solo los aprobados → todos
+                    //     los criterios del archivo se marcan como superados.
+                    //   - "SUSP" + "NoEVAL" simultáneos: el archivo incluye solo
+                    //     suspensos y no evaluados → los aprobados son los que
+                    //     FALTAN en el archivo (se infieren de criteriaDB).
+                    //   - En cualquier otro caso: clasificación por calificación.
+                    _classifyImportedCriteria: function(raw, filename) {
                         const result = {
                             studentName: raw.studentName || '',
                             course: raw.course || '',
@@ -3274,9 +3290,31 @@
                             notEvaluatedCodes: [],
                             failedWithGrade: {},   // codigo -> nota (solo para resumen)
                             materiaNames: {},      // materia_code -> nombre legible
-                            unknownCodes: []       // códigos que no se reconocen en criteriaDB
+                            unknownCodes: [],      // códigos que no se reconocen en criteriaDB
+                            mode: 'default',           // 'todos' | 'aprob-only' | 'susp-noeval' | 'default'
+                            inferredApproved: false    // true si los aprobados se han inferido (no están en el archivo)
                         };
 
+                        // Detectar el modo a partir del nombre del archivo
+                        const fnLower = (filename || '').toLowerCase();
+                        const hasTodos = /todos/.test(fnLower);
+                        const hasAprob = /aprob/.test(fnLower);
+                        const hasSusp = /susp/.test(fnLower);
+                        const hasNoEval = /noeval|no_eval|no-eval|no\s*eval/.test(fnLower);
+
+                        if (hasTodos) {
+                            result.mode = 'todos';
+                        } else if (hasAprob && !hasSusp && !hasNoEval) {
+                            result.mode = 'aprob-only';
+                        } else if (!hasAprob && hasSusp && hasNoEval) {
+                            result.mode = 'susp-noeval';
+                            result.inferredApproved = true;
+                        } else {
+                            result.mode = 'default';
+                        }
+
+                        // Procesar cada criterio del archivo
+                        const fileCodes = new Set();
                         raw.criteria.forEach(c => {
                             const code = c.codigo;
                             // Determinar materia_code (CYR3, TYD2, ...) a partir del código
@@ -3296,28 +3334,72 @@
                             if (!result.materiaNames[subjectCode]) {
                                 result.materiaNames[subjectCode] = c.materia || '';
                             }
-                            // Clasificar según calificación
-                            const cls = this._classifyCalificacion(c.calificacion);
-                            if (cls.status === 'approved') {
+                            fileCodes.add(code);
+
+                            // Asignar materia detectada
+                            if (subjectCode.startsWith('CYR')) result.subjects.cyr = subjectCode;
+                            else if (subjectCode.startsWith('TYD')) result.subjects.tyd = subjectCode;
+
+                            // Clasificar según el modo detectado
+                            if (result.mode === 'aprob-only') {
+                                // El archivo incluye SOLO los aprobados:
+                                // todos los criterios del archivo se marcan como superados.
+                                // Se usa la calificación como nota si es ≥ 5; en caso
+                                // contrario (datos contradictorios) se usa 5 como mínima
+                                // de aprobado.
+                                const cls = this._classifyCalificacion(c.calificacion);
+                                const grade = (cls.grade !== null && cls.grade >= 5) ? cls.grade : 5;
                                 result.counts.approved++;
-                                result.approvedCriteria[code] = cls.grade;
-                                // Asignar materia en subjects
-                                if (subjectCode.startsWith('CYR')) result.subjects.cyr = subjectCode;
-                                else if (subjectCode.startsWith('TYD')) result.subjects.tyd = subjectCode;
-                            } else if (cls.status === 'failed') {
-                                result.counts.failed++;
-                                result.recoveryCodes.push(code);
-                                result.failedWithGrade[code] = cls.grade;
-                                if (subjectCode.startsWith('CYR')) result.subjects.cyr = subjectCode;
-                                else if (subjectCode.startsWith('TYD')) result.subjects.tyd = subjectCode;
+                                result.approvedCriteria[code] = grade;
+                            } else if (result.mode === 'susp-noeval') {
+                                // El archivo incluye SOLO suspensos y no evaluados:
+                                // todos los criterios del archivo son de recuperación.
+                                // Los aprobados se inferirán al final (los que faltan).
+                                const cls = this._classifyCalificacion(c.calificacion);
+                                if (cls.status === 'failed') {
+                                    result.counts.failed++;
+                                    result.recoveryCodes.push(code);
+                                    result.failedWithGrade[code] = cls.grade;
+                                } else {
+                                    result.counts.notEvaluated++;
+                                    result.recoveryCodes.push(code);
+                                    result.notEvaluatedCodes.push(code);
+                                }
                             } else {
-                                result.counts.notEvaluated++;
-                                result.recoveryCodes.push(code);
-                                result.notEvaluatedCodes.push(code);
-                                if (subjectCode.startsWith('CYR')) result.subjects.cyr = subjectCode;
-                                else if (subjectCode.startsWith('TYD')) result.subjects.tyd = subjectCode;
+                                // Modo 'todos' o por defecto: clasificación por calificación
+                                const cls = this._classifyCalificacion(c.calificacion);
+                                if (cls.status === 'approved') {
+                                    result.counts.approved++;
+                                    result.approvedCriteria[code] = cls.grade;
+                                } else if (cls.status === 'failed') {
+                                    result.counts.failed++;
+                                    result.recoveryCodes.push(code);
+                                    result.failedWithGrade[code] = cls.grade;
+                                } else {
+                                    result.counts.notEvaluated++;
+                                    result.recoveryCodes.push(code);
+                                    result.notEvaluatedCodes.push(code);
+                                }
                             }
                         });
+
+                        // En modo 'susp-noeval', los aprobados son los criterios
+                        // de las materias detectadas que NO aparecen en el archivo
+                        // (se inferirán y se marcarán con nota mínima de aprobado = 5).
+                        if (result.mode === 'susp-noeval') {
+                            const subjectsDetected = [];
+                            if (result.subjects.cyr) subjectsDetected.push(result.subjects.cyr);
+                            if (result.subjects.tyd) subjectsDetected.push(result.subjects.tyd);
+                            subjectsDetected.forEach(subjectCode => {
+                                const allCriteria = criteriaDB[subjectCode] || [];
+                                allCriteria.forEach(c => {
+                                    if (!fileCodes.has(c.code)) {
+                                        result.counts.approved++;
+                                        result.approvedCriteria[c.code] = 5.0; // Nota mínima de aprobado
+                                    }
+                                });
+                            });
+                        }
 
                         return result;
                     },
@@ -3375,12 +3457,45 @@
                             }).join('')
                             : '<span class="text-gray-400 italic">Ninguna</span>';
 
+                        // Construir el banner de modo (TODOS / APROB / SUSP+NoEVAL / por defecto)
+                        const modeBanner = (() => {
+                            const mode = parsed.mode;
+                            let bgClass = 'bg-blue-50 border-blue-200';
+                            let icon = 'fa-circle-info';
+                            let title = 'Modo detectado: Clasificación por calificación';
+                            let desc = 'Se clasifica cada criterio según su valor de calificación (≥ 5 → aprobado).';
+                            if (mode === 'todos') {
+                                bgClass = 'bg-blue-50 border-blue-200';
+                                icon = 'fa-circle-info';
+                                title = 'Modo detectado: TODOS';
+                                desc = 'El archivo incluye todos los criterios. Los aprobados se identifican por su calificación (≥ 5).';
+                            } else if (mode === 'aprob-only') {
+                                bgClass = 'bg-green-50 border-green-200';
+                                icon = 'fa-check-circle';
+                                title = 'Modo detectado: APROBADOS';
+                                desc = 'El archivo incluye solo los criterios aprobados. Todos se marcarán como superados con su calificación (o nota mínima 5 si no es parseable).';
+                            } else if (mode === 'susp-noeval') {
+                                bgClass = 'bg-amber-50 border-amber-200';
+                                icon = 'fa-triangle-exclamation';
+                                title = 'Modo detectado: SUSPENSOS + NO EVALUADOS';
+                                desc = 'El archivo incluye solo criterios de recuperación. Los aprobados se INFIEREN a partir de los criterios de las materias detectadas que NO aparecen en el archivo (se marcarán con nota mínima 5).';
+                            }
+                            return `<div class="${bgClass} p-3 rounded-lg border flex items-start gap-2">
+                                <i class="fa-solid ${icon} mt-0.5"></i>
+                                <div>
+                                    <div class="font-bold text-sm">${app.utils.escapeHTML(title)}</div>
+                                    <p class="text-xs text-gray-700 mt-1">${desc}</p>
+                                </div>
+                            </div>`;
+                        })();
+
                         const total = parsed.counts.approved + parsed.counts.failed + parsed.counts.notEvaluated;
                         body.innerHTML = `
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
                                 <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Archivo</div>
                                 <div class="text-sm font-mono break-all">${app.utils.escapeHTML(filename)}</div>
                             </div>
+                            ${modeBanner}
                             <div class="grid grid-cols-2 gap-3">
                                 <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
                                     <div class="text-xs text-blue-700 uppercase font-semibold mb-1">Alumno detectado</div>
@@ -3399,7 +3514,7 @@
                                 <div class="bg-green-50 p-3 rounded-lg border border-green-200 text-center">
                                     <div class="text-2xl font-bold text-green-700">${parsed.counts.approved}</div>
                                     <div class="text-xs text-green-700 font-semibold uppercase">Aprobados</div>
-                                    <div class="text-[10px] text-gray-500 mt-1">Se marcan como superados</div>
+                                    <div class="text-[10px] text-gray-500 mt-1">${parsed.inferredApproved ? 'Inferidos (no en archivo)' : 'Se marcan como superados'}</div>
                                 </div>
                                 <div class="bg-red-50 p-3 rounded-lg border border-red-200 text-center">
                                     <div class="text-2xl font-bold text-red-700">${parsed.counts.failed}</div>
