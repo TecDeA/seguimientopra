@@ -987,6 +987,7 @@
                                 <li><strong>Marca como entregada:</strong> Activa el checkbox "Entregada/Evaluable"</li>
                                 <li><strong>Califica criterios:</strong> Introduce notas cuando la actividad esté entregada</li>
                                 <li><strong>Edita/Elimina:</strong> Modifica actividades existentes</li>
+                                <li><strong>Copiar actividad:</strong> Reutiliza actividades de otros alumnos del curso actual o de cursos anteriores siempre que encajen con los criterios a recuperar del alumno actual</li>
                             </ul>
                             <p class="text-sm text-yellow-600 mt-2"><i class="fa-solid fa-bell mr-1"></i> <strong>Alerta:</strong> El sistema avisará si quedan criterios sin asignar a actividades.</p>
                         </div>
@@ -1002,7 +1003,7 @@
             </div>
 
             <div id="activity-panel" class="hidden">
-                <!-- MODIFICADO: Añadido botón "Copiar Actividad" y toggle de bloqueo -->
+                <!-- Botones: toggle de bloqueo de evaluación, Copiar Actividad, Añadir Actividad -->
                 <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                     <div class="flex items-center gap-3">
                         <h3 class="text-xl font-bold text-gray-700">Actividades Asignadas</h3>
@@ -1016,7 +1017,7 @@
                             <input type="checkbox" id="lock-override" onchange="app.modules.activities.toggleLockOverride()">
                             <label for="lock-override">🔓 Desbloquear Evaluación</label>
                         </div>
-                        <button onclick="app.modules.activities.openCopyModal()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 shadow transition btn-primary ripple hover-lift">
+                        <button onclick="app.modules.activities.openCopyModal()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 shadow transition btn-primary ripple hover-lift" title="Copia actividades de otros alumnos o de cursos anteriores">
                             <i class="fa-solid fa-copy mr-2"></i> Copiar Actividad
                         </button>
                         <button onclick="app.modules.activities.openModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow transition btn-primary ripple hover-lift">
@@ -1548,7 +1549,7 @@
         </div>
     </div>
 
-    <!-- MODAL: ADD/EDIT ACTIVITY (MODIFICADO: AÑADIDO CHECKBOX EVALUADA) -->
+    <!-- MODAL: ADD/EDIT ACTIVITY -->
     <div id="modal-activity" class="fixed inset-0 z-50 hidden opacity-0 pointer-events-none modal">
         <div class="absolute inset-0 bg-black bg-opacity-50" onclick="app.modules.activities.closeModal()"></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
@@ -1594,19 +1595,28 @@
         </div>
     </div>
 
-    <!-- MODAL: COPY ACTIVITIES (NUEVO) -->
+    <!-- MODAL: COPY ACTIVITIES -->
     <div id="modal-copy-activities" class="fixed inset-0 z-50 hidden opacity-0 pointer-events-none modal">
         <div class="absolute inset-0 bg-black bg-opacity-50" onclick="app.modules.activities.closeCopyModal()"></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6">
-            <h3 class="text-2xl font-bold mb-4">Copiar Actividades de Otros Alumnos</h3>
-            
+            <h3 class="text-2xl font-bold mb-1">Copiar actividades de otros alumnos o cursos anteriores</h3>
+            <p class="text-sm text-gray-500 mb-4">Selecciona el curso de origen y las actividades a copiar. Solo se muestran las actividades compatibles con las materias del alumno actual y con criterios pendientes de recuperar.</p>
+
+            <!-- Selector de curso de origen -->
+            <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg mb-3 flex flex-col md:flex-row md:items-center gap-3">
+                <label class="text-sm font-bold text-gray-700 whitespace-nowrap"><i class="fa-solid fa-graduation-cap mr-1 text-blue-600"></i> Curso de origen:</label>
+                <select id="copy-source-course" onchange="app.modules.activities.changeCopySourceCourse(this.value)" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500">
+                    <!-- Renderizado por JS -->
+                </select>
+                <span id="copy-source-status" class="text-xs text-gray-500 whitespace-nowrap"></span>
+            </div>
+
             <div class="mb-4">
-                <p class="text-sm text-gray-600 mb-2">Selecciona una o varias actividades para copiar al alumno actual. Se mostrarán solo actividades compatibles con las materias del alumno actual.</p>
                 <div class="flex items-center mb-2">
                     <input type="checkbox" id="select-all-copy" class="mr-2" onchange="app.modules.activities.toggleSelectAllCopy(this)">
                     <label for="select-all-copy" class="font-bold text-sm">Seleccionar todas las actividades visibles</label>
                 </div>
-                <div id="copy-activities-list" class="space-y-2 max-h-60 overflow-y-auto p-2 border rounded bg-gray-50">
+                <div id="copy-activities-list" class="space-y-2 max-h-60 overflow-y-auto p-2 border rounded bg-gray-50 custom-scrollbar">
                     <!-- Checkboxes generated dynamically -->
                 </div>
             </div>
@@ -2000,13 +2010,6 @@
                     return '';
                 },
 
-                escapeHTML: function(str) {
-                    if (!str) return '';
-                    const div = document.createElement('div');
-                    div.textContent = str;
-                    return div.innerHTML;
-                },
-
                 openModal: function(modalId, closeCallback) {
                     const modal = document.getElementById(modalId);
                     modal.classList.remove('hidden', 'pointer-events-none', 'opacity-0');
@@ -2124,7 +2127,7 @@
                         }
                         window.scrollTo(0,0);
                         
-                        // MEJORA 1: Enfoque automático en el primer select y limpieza si no hay alumnos
+                        // Enfoque automático en el primer select y limpieza si no hay alumnos
                         setTimeout(() => {
                             switch(viewId) {
                                 case 'program':
@@ -2147,7 +2150,7 @@
                                     const actSelect = document.getElementById('activity-student-select');
                                     if (actSelect) {
                                         actSelect.focus();
-                                        // CORRECCIÓN BUG 1: Cargar alumno si ya hay uno seleccionado
+                                        // Cargar alumno si ya hay uno seleccionado
                                         if (actSelect.value) {
                                             app.modules.activities.loadStudent();
                                         } else if (app.state.students.length === 0) {
@@ -2155,13 +2158,13 @@
                                         }
                                     }
                                     break;
-                                    
+
                                 case 'evaluation':
                                     app.modules.evaluation.init();
                                     const evalSelect = document.getElementById('eval-student-select');
                                     if (evalSelect) {
                                         evalSelect.focus();
-                                        // CORRECCIÓN: Calcular si ya hay un alumno seleccionado
+                                        // Calcular si ya hay un alumno seleccionado
                                         if (evalSelect.value) {
                                             app.modules.evaluation.calculate();
                                         }
@@ -2510,9 +2513,8 @@
                     reader.onload = async function(e) {
                         try {
                             const text = e.target.result;
-                            console.log('JSON importado (' + text.length + ' chars)');
                             const importedData = JSON.parse(text);
-                            
+
                             // Detectar tipo de archivo: BD completa o curso individual
                             if (importedData._type === 'full_backup' && importedData.courses) {
                                 // === BACKUP COMPLETO ===
@@ -2628,7 +2630,7 @@
 
             // --- MÓDULOS DE LÓGICA ---
             modules: {
-                // --- CÁLCULO CENTRALIZADO (MODIFICADO: solo usa actividades evaluadas) ---
+                // --- CÁLCULO CENTRALIZADO ---
                 calculation: {
                     getStudentSubjectData: function(student, subjectCode) {
                         const criteriaList = criteriaDB[subjectCode] || [];
@@ -2656,7 +2658,7 @@
                         
                         // 2. Agregar notas de actividades - SOLO SI LA ACTIVIDAD ESTÁ EVALUADA
                         (student.activities || []).forEach(act => {
-                            if (act.evaluated) { // <-- CAMBIADO: solo actividades evaluadas
+                            if (act.evaluated && act.grades) {
                                 for (let code in act.grades) {
                                     if (code.startsWith(subjectCode.substring(0,3))) {
                                         if (!critGrades[code]) {
@@ -2873,7 +2875,7 @@
                         }
                     },
                     
-                    // NUEVA FUNCIÓN: Borrar todos los alumnos (RESET absoluto)
+                    // Borrar todos los alumnos (RESET absoluto)
                     deleteAllStudents: function() {
                         if (app.state.students.length === 0) {
                             app.views.notify("No hay alumnos para borrar", "info");
@@ -3605,7 +3607,7 @@
                         return m[1] + '.' + m[2] + '.';
                     },
 
-                    // NUEVA FUNCIÓN: Borrar todos los datos de programa de recuperación
+                    // Borrar todos los datos de programa de recuperación
                     deleteAllProgramData: function() {
                         if (app.state.students.length === 0) {
                             app.views.notify("No hay alumnos con datos de programa", "info");
@@ -3656,7 +3658,7 @@
                     }
                 },
                 
-                // --- ACTIVIDADES (MODIFICADO: añadido lockOverride, evaluated, etc.) ---
+                // --- ACTIVIDADES ---
                 activities: {
                     currentStudent: null,
                     currentActIndex: -1,
@@ -3720,7 +3722,7 @@
                         // Get assigned
                         const assignedSet = new Set();
                         (student.activities || []).forEach(act => {
-                            Object.keys(act.grades).forEach(code => assignedSet.add(code));
+                            Object.keys(act.grades || {}).forEach(code => assignedSet.add(code));
                         });
 
                         // Filter
@@ -3818,7 +3820,7 @@
                         if (!Array.isArray(this.currentStudent.activities)) {
                             this.currentStudent.activities = [];
                         }
-                        // MEJORA 2: Ordenar actividades por fecha (más temprana primero)
+                        // Ordenar actividades por fecha (más temprana primero)
                         this.currentStudent.activities.sort((a, b) => {
                             // Convertir fechas a objetos Date para comparación
                             const dateA = new Date(a.date);
@@ -3887,7 +3889,7 @@
                                 </div>
                                 
                                 <div class="bg-gray-50 p-2 rounded text-xs">
-                                    ${Object.entries(act.grades).map(([code, note]) => {
+                                    ${Object.entries(act.grades || {}).map(([code, note]) => {
                                         // Determinar si el input debe estar deshabilitado: si la actividad no está entregada, el input está deshabilitado, o si el bloqueo está activo
                                         const disabled = !act.delivered || isLocked;
                                         const desc = app.utils.getCriterionDescription(code);
@@ -3919,6 +3921,8 @@
                         const act = this.currentStudent.activities[actIndex];
                         if (act) {
                             act[flag] = value;
+                            // Garantizar que exista el objeto grades (datos antiguos)
+                            if (!act.grades) act.grades = {};
                             // Si se desmarca delivered, ponemos a cero las notas y deshabilitamos
                             if (flag === 'delivered' && !value) {
                                 // Poner a cero todas las notas de esta actividad
@@ -3955,13 +3959,13 @@
                             if (num > 10) num = 10;
                             act.grades[code] = num;
                             app.data.saveLocal();
-                            // No recargar todo, solo actualizar la vista si es necesario? Mejor recargar para consistencia
+                            // Recargar para mantener la vista consistente
                             this.renderActivities();
                             this._refreshEvaluation();
                         }
                     },
                     
-                    // MEJORA 3: Función para duplicar actividad
+                    // Función para duplicar actividad
                     duplicateActivity: function(idx) {
                         const originalAct = this.currentStudent.activities[idx];
                         const duplicatedAct = JSON.parse(JSON.stringify(originalAct));
@@ -4005,11 +4009,12 @@
                         let visibleCount = 0;
                         allCrit.forEach(c => {
                             const isAlreadyPassed = this.currentStudent.passedCriteria.hasOwnProperty(c.code);
-                            const isUsedInThisActivity = existingData && existingData.grades.hasOwnProperty(c.code);
+                            const existingGrades = (existingData && existingData.grades) || {};
+                            const isUsedInThisActivity = existingGrades.hasOwnProperty(c.code);
 
                             if (!isAlreadyPassed || isUsedInThisActivity) {
-                                const isSelected = existingData && existingData.grades.hasOwnProperty(c.code);
-                                const gradeVal = isSelected ? existingData.grades[c.code] : '';
+                                const isSelected = isUsedInThisActivity;
+                                const gradeVal = isSelected ? existingGrades[c.code] : '';
                                 
                                 const div = document.createElement('div');
                                 div.className = "flex items-center gap-2 text-sm hover:bg-gray-100 p-2 rounded transition-colors bg-gray-50";
@@ -4162,169 +4167,306 @@
                         selectEl.classList.add('text-blue-800', 'border-gray-300');
                     },
                     
-                    // --- FUNCIONALIDADES PARA COPIAR ACTIVIDADES ---
+                    // --- COPIAR ACTIVIDADES (CURSO ACTUAL O DE AÑOS ANTERIORES) ---
+                    // Caché en memoria de alumnos cargados desde cursos anteriores
+                    // para no tener que volver a pedirlos a Firebase al cambiar de select.
+                    // Estructura: { "2024-2025": [student, student, ...] }
+                    _cachedCoursesStudents: {},
+
                     openCopyModal: function() {
                         if (!this.currentStudent) {
                             app.views.notify("Primero selecciona un alumno", "error");
                             return;
                         }
-                        
-                        const listDiv = document.getElementById('copy-activities-list');
-                        listDiv.innerHTML = '';
-                        
-                        // Obtener materias del alumno actual
-                        const currentSubjects = app.utils.studentSubjects(this.currentStudent);
-                        
-                        // Recopilar todas las actividades de otros alumnos
-                        let allActivities = [];
-                        
-                        app.state.students.forEach(student => {
-                            // Saltar el alumno actual
-                            if (student.id === this.currentStudent.id) return;
-                            
-                            // Verificar si el alumno tiene materias compatibles
-                            const studentSubjects = app.utils.studentSubjects(student);
-                            const hasCompatibleSubjects = studentSubjects.some(sub => currentSubjects.includes(sub));
-                            
-                            if (!hasCompatibleSubjects) return;
-                            
-                            // Añadir actividades de este alumno
-                            student.activities.forEach((activity, idx) => {
-                                // Verificar si la actividad ya existe en el alumno actual (por nombre y fecha)
-                                const isDuplicate = this.currentStudent.activities.some(a => 
-                                    a.name === activity.name && a.date === activity.date
-                                );
-                                
-                                if (!isDuplicate) {
-                                    allActivities.push({
-                                        studentId: student.id,
-                                        studentName: student.name,
-                                        activityIndex: idx,
-                                        activity: activity
-                                    });
-                                }
-                            });
+
+                        // Reiniciar el caché local de este modal para evitar mostrar
+                        // alumnos de un alumno-destino previo.
+                        this._cachedCoursesStudents = {};
+
+                        // Construir el desplegable de cursos de origen
+                        const courseSelect = document.getElementById('copy-source-course');
+                        const current = app.state.currentCourse || app.firebase.getDefaultCourse();
+                        const courses = (app.state.courses || []).slice().sort((a, b) => b.localeCompare(a));
+                        courseSelect.innerHTML = '';
+                        // Curso actual primero (datos en memoria)
+                        const optCurrent = document.createElement('option');
+                        optCurrent.value = current;
+                        optCurrent.textContent = current + ' (curso actual)';
+                        courseSelect.appendChild(optCurrent);
+                        // Cursos anteriores
+                        courses.filter(c => c !== current).forEach(c => {
+                            const opt = document.createElement('option');
+                            opt.value = c;
+                            opt.textContent = c;
+                            courseSelect.appendChild(opt);
                         });
-                        
-                        if (allActivities.length === 0) {
-                            listDiv.innerHTML = '<p class="text-sm text-gray-500 italic text-center p-2">No hay actividades compatibles para copiar.</p>';
-                        } else {
-                            // Agrupar actividades por alumno
-                            const groupedByStudent = {};
-                            allActivities.forEach(item => {
-                                if (!groupedByStudent[item.studentName]) {
-                                    groupedByStudent[item.studentName] = [];
-                                }
-                                groupedByStudent[item.studentName].push(item);
-                            });
-                            
-                            // Mostrar actividades agrupadas
-                            Object.entries(groupedByStudent).forEach(([studentName, activities]) => {
-                                const studentHeader = document.createElement('div');
-                                studentHeader.className = "font-bold text-gray-700 text-sm mt-2 mb-1 pb-1 border-b";
-                                studentHeader.textContent = `Alumno: ${studentName}`;
-                                listDiv.appendChild(studentHeader);
-                                
-                                activities.forEach((item, idx) => {
-                                    const act = item.activity;
-                                    const div = document.createElement('div');
-                                    div.className = "flex items-center gap-3 p-2 hover:bg-gray-100 rounded transition-colors";
-                                    div.innerHTML = `
-                                        <input type="checkbox" class="copy-act-check" id="copy-act-${item.studentId}-${idx}" 
-                                               data-student-id="${item.studentId}" 
-                                               data-activity-index="${item.activityIndex}">
-                                        <label for="copy-act-${item.studentId}-${idx}" class="flex-1 cursor-pointer">
-                                            <span class="font-bold text-gray-800">${act.name}</span>
-                                            <span class="text-sm text-gray-600 ml-2">(${act.date})</span>
-                                            <div class="text-xs text-gray-500 mt-1">
-                                                <span class="font-semibold">Criterios:</span> ${Object.keys(act.grades).join(', ')}
-                                            </div>
-                                        </label>
-                                    `;
-                                    listDiv.appendChild(div);
-                                });
-                            });
-                        }
-                        
+
+                        // Deseleccionar "seleccionar todas"
+                        document.getElementById('select-all-copy').checked = false;
+
+                        // Pintar la lista inicial con el curso actual
+                        this._renderCopyActivitiesList(current, app.state.students);
+
                         app.utils.openModal('modal-copy-activities', this.closeCopyModal);
                     },
-                    
+
+                    // Carga (desde Firebase o caché) los alumnos de un curso anterior
+                    // y refresca la lista de actividades del modal.
+                    changeCopySourceCourse: function(courseYear) {
+                        const statusEl = document.getElementById('copy-source-status');
+                        const listDiv = document.getElementById('copy-activities-list');
+
+                        // Curso actual: usar datos en memoria
+                        const current = app.state.currentCourse || app.firebase.getDefaultCourse();
+                        if (courseYear === current) {
+                            if (statusEl) statusEl.textContent = '';
+                            this._renderCopyActivitiesList(courseYear, app.state.students);
+                            return;
+                        }
+
+                        // ¿Cacheado?
+                        if (this._cachedCoursesStudents[courseYear]) {
+                            if (statusEl) statusEl.textContent = this._cachedCoursesStudents[courseYear].length + ' alumno(s) cacheados';
+                            this._renderCopyActivitiesList(courseYear, this._cachedCoursesStudents[courseYear]);
+                            return;
+                        }
+
+                        // Cargar desde Firebase
+                        if (statusEl) {
+                            statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Cargando alumnos...';
+                        }
+                        listDiv.innerHTML = '<p class="text-sm text-gray-500 italic text-center p-2">Cargando alumnos del curso ' + app.utils.escapeHTML(courseYear) + '...</p>';
+
+                        app.modules.activities._loadCourseStudentsAsync(courseYear).then(students => {
+                            this._cachedCoursesStudents[courseYear] = students;
+                            if (statusEl) statusEl.textContent = students.length + ' alumno(s)';
+                            this._renderCopyActivitiesList(courseYear, students);
+                        }).catch(err => {
+                            console.error('Error cargando alumnos del curso ' + courseYear, err);
+                            listDiv.innerHTML = '<p class="text-sm text-red-600 italic text-center p-2">Error al cargar los alumnos del curso ' + app.utils.escapeHTML(courseYear) + '</p>';
+                            if (statusEl) statusEl.textContent = 'Error';
+                        });
+                    },
+
+                    // Carga asíncrona de los alumnos de un curso desde Firebase,
+                    // normalizando su estructura (igual que loadCourseData para el curso activo).
+                    _loadCourseStudentsAsync: async function(courseYear) {
+                        try {
+                            const snap = await db.ref('courses/' + courseYear + '/data').once('value');
+                            if (!snap.exists()) return [];
+                            const data = snap.val();
+                            let students = app.decodeFirebaseKeys(data.students || []);
+                            if (students && !Array.isArray(students) && typeof students === 'object') {
+                                students = Object.values(students);
+                            }
+                            if (!Array.isArray(students)) students = [];
+                            return students.map(app.utils.normalizeStudent).filter(Boolean);
+                        } catch (e) {
+                            console.error('Error leyendo curso ' + courseYear, e);
+                            return [];
+                        }
+                    },
+
+                    // Pinta la lista de actividades compatibles con el alumno actual
+                    // a partir de los alumnos de un curso dado.
+                    _renderCopyActivitiesList: function(courseYear, students) {
+                        const listDiv = document.getElementById('copy-activities-list');
+                        listDiv.innerHTML = '';
+
+                        // Deseleccionar "seleccionar todas" (la cuenta cambia con cada curso)
+                        const selectAll = document.getElementById('select-all-copy');
+                        if (selectAll) selectAll.checked = false;
+
+                        if (!this.currentStudent) return;
+
+                        // Materias y criterios disponibles para el alumno actual
+                        const currentSubjects = app.utils.studentSubjects(this.currentStudent);
+                        const currentRecoveryCodes = new Set(this.getUnassignedCriteria(this.currentStudent));
+                        // Códigos ya cubiertos por actividades existentes del alumno actual:
+                        // se excluyen para no duplicar trabajo ya hecho.
+                        const currentAssignedCodes = new Set();
+                        (this.currentStudent.activities || []).forEach(act => {
+                            Object.keys(act.grades || {}).forEach(c => currentAssignedCodes.add(c));
+                        });
+
+                        // Recopilar actividades compatibles
+                        const allActivities = [];
+                        students.forEach(student => {
+                            // Saltar al propio alumno actual (mismo id solo en curso actual)
+                            if (student.id === this.currentStudent.id) return;
+
+                            const studentSubjects = app.utils.studentSubjects(student);
+                            const hasCompatibleSubjects = studentSubjects.some(sub => currentSubjects.includes(sub));
+                            if (!hasCompatibleSubjects) return;
+
+                            (student.activities || []).forEach((activity, idx) => {
+                                // Filtrar por nombre+fecha para no duplicar actividades existentes
+                                const isDuplicate = (this.currentStudent.activities || []).some(a =>
+                                    a.name === activity.name && a.date === activity.date
+                                );
+                                if (isDuplicate) return;
+
+                                // Comprobar si la actividad tiene al menos un criterio
+                                // que el alumno actual deba recuperar y aún no tenga asignado.
+                                const activityCodes = Object.keys(activity.grades || {});
+                                const hasRecoverableCode = activityCodes.some(code =>
+                                    currentRecoveryCodes.has(code) && !currentAssignedCodes.has(code)
+                                );
+                                if (!hasRecoverableCode) return;
+
+                                allActivities.push({
+                                    studentId: student.id,
+                                    studentName: student.name,
+                                    activityIndex: idx,
+                                    activity: activity
+                                });
+                            });
+                        });
+
+                        if (allActivities.length === 0) {
+                            listDiv.innerHTML = '<p class="text-sm text-gray-500 italic text-center p-2">No hay actividades compatibles para copiar en este curso.</p>';
+                            return;
+                        }
+
+                        // Agrupar por alumno
+                        const grouped = {};
+                        allActivities.forEach(item => {
+                            (grouped[item.studentName] = grouped[item.studentName] || []).push(item);
+                        });
+
+                        Object.entries(grouped).forEach(([studentName, items]) => {
+                            const header = document.createElement('div');
+                            header.className = 'font-bold text-gray-700 text-sm mt-2 mb-1 pb-1 border-b';
+                            header.textContent = 'Alumno: ' + studentName;
+                            listDiv.appendChild(header);
+
+                            items.forEach((item, idx) => {
+                                const act = item.activity;
+                                // Resaltar los criterios que el alumno actual necesita
+                                // recuperar (en verde) frente a los que ya tiene cubiertos
+                                // o no le aplican (en gris).
+                                const codes = Object.keys(act.grades || {});
+                                const codesHtml = codes.map(code => {
+                                    let cls = 'text-gray-400';
+                                    if (currentRecoveryCodes.has(code)) {
+                                        if (currentAssignedCodes.has(code)) cls = 'text-amber-600';
+                                        else cls = 'text-green-700 font-semibold';
+                                    }
+                                    return '<span class="' + cls + '">' + app.utils.escapeHTML(code) + '</span>';
+                                }).join(', ');
+
+                                const div = document.createElement('div');
+                                div.className = 'flex items-start gap-3 p-2 hover:bg-gray-100 rounded transition-colors';
+                                div.innerHTML =
+                                    '<input type="checkbox" class="copy-act-check mt-1" id="copy-act-' + app.utils.escapeHTML(item.studentId) + '-' + idx + '" '
+                                          + 'data-student-id="' + app.utils.escapeHTML(item.studentId) + '" '
+                                          + 'data-activity-index="' + item.activityIndex + '">'
+                                  + '<label for="copy-act-' + app.utils.escapeHTML(item.studentId) + '-' + idx + '" class="flex-1 cursor-pointer">'
+                                          + '<span class="font-bold text-gray-800">' + app.utils.escapeHTML(act.name) + '</span>'
+                                          + '<span class="text-sm text-gray-600 ml-2">(' + app.utils.escapeHTML(act.date) + ')</span>'
+                                          + '<div class="text-xs mt-1">Criterios: ' + codesHtml + '</div>'
+                                  + '</label>';
+                                listDiv.appendChild(div);
+                            });
+                        });
+                    },
+
                     closeCopyModal: function() {
                         app.utils.closeModal('modal-copy-activities');
+                        // Liberar el caché para no retener alumnos en memoria
+                        app.modules.activities._cachedCoursesStudents = {};
                     },
-                    
+
                     toggleSelectAllCopy: function(checkbox) {
-                        const checkboxes = document.querySelectorAll('.copy-act-check');
-                        checkboxes.forEach(cb => {
+                        document.querySelectorAll('.copy-act-check').forEach(cb => {
                             cb.checked = checkbox.checked;
                         });
                     },
-                    
+
                     copySelectedActivities: function() {
-                        const checkboxes = document.querySelectorAll('.copy-act-check:checked');
-                        if (checkboxes.length === 0) {
-                            app.views.notify("No hay actividades seleccionadas", "error");
+                        if (!this.currentStudent) {
+                            app.views.notify('Selecciona un alumno primero', 'error');
                             return;
                         }
-                        
+                        const checkboxes = document.querySelectorAll('.copy-act-check:checked');
+                        if (checkboxes.length === 0) {
+                            app.views.notify('No hay actividades seleccionadas', 'error');
+                            return;
+                        }
+
+                        // Resolver el curso de origen actual para saber de dónde sacar
+                        // los alumnos cuando procedan de un curso anterior.
+                        const courseSelect = document.getElementById('copy-source-course');
+                        const sourceCourse = courseSelect ? courseSelect.value : null;
+                        const current = app.state.currentCourse || app.firebase.getDefaultCourse();
+                        let sourceStudents = app.state.students; // Por defecto, curso actual
+                        if (sourceCourse && sourceCourse !== current) {
+                            sourceStudents = this._cachedCoursesStudents[sourceCourse] || [];
+                        }
+
+                        // Códigos que el alumno actual necesita recuperar y aún no
+                        // tiene cubiertos por ninguna actividad existente
+                        const currentRecoveryCodes = new Set(this.getUnassignedCriteria(this.currentStudent));
+
                         let copiedCount = 0;
-                        
+                        let skippedCount = 0;
+
                         checkboxes.forEach(cb => {
                             const studentId = cb.getAttribute('data-student-id');
                             const activityIndex = parseInt(cb.getAttribute('data-activity-index'));
-                            
-                            // Encontrar el alumno y la actividad original
-                            const sourceStudent = app.state.students.find(s => s.id === studentId);
-                            if (sourceStudent && sourceStudent.activities[activityIndex]) {
-                                const originalActivity = sourceStudent.activities[activityIndex];
-                                
-                                // Crear una copia profunda de la actividad
-                                const copiedActivity = JSON.parse(JSON.stringify(originalActivity));
-                                
-                                // Ajustar los criterios para que sean compatibles con el alumno actual
-                                // Solo mantener criterios que existen en las materias del alumno actual Y no están aprobados
-                                const currentSubjects = app.utils.studentSubjects(this.currentStudent);
-                                
-                                // Obtener todos los criterios disponibles para el alumno actual
-                                let allAvailableCriteria = [];
-                                currentSubjects.forEach(sub => {
-                                    if (criteriaDB[sub]) {
-                                        allAvailableCriteria = allAvailableCriteria.concat(criteriaDB[sub].map(c => c.code));
-                                    }
-                                });
-                                
-                                // MEJORA 4: Filtrar los criterios de la actividad
-                                // Solo incluir criterios que el alumno destino debe recuperar (no aprobados)
-                                const filteredGrades = {};
-                                Object.entries(copiedActivity.grades).forEach(([code, grade]) => {
-                                    // Solo incluir si el criterio está en las materias del alumno actual Y no está aprobado
-                                    if (allAvailableCriteria.includes(code) && !this.currentStudent.passedCriteria.hasOwnProperty(code)) {
-                                        filteredGrades[code] = grade;
-                                    }
-                                });
-                                
-                                // Si después de filtrar hay criterios, añadir la actividad
-                                if (Object.keys(filteredGrades).length > 0) {
-                                    copiedActivity.grades = filteredGrades;
-                                    this.currentStudent.activities.push(copiedActivity);
-                                    copiedCount++;
+
+                            const sourceStudent = sourceStudents.find(s => s.id === studentId);
+                            if (!sourceStudent || !sourceStudent.activities || !sourceStudent.activities[activityIndex]) {
+                                skippedCount++;
+                                return;
+                            }
+                            const originalActivity = sourceStudent.activities[activityIndex];
+
+                            // Copia profunda para no compartir referencias
+                            const copiedActivity = JSON.parse(JSON.stringify(originalActivity));
+
+                            // Filtrar criterios: mantener solo los que el alumno actual
+                            // necesita recuperar y no tiene ya cubiertos por otra actividad.
+                            const filteredGrades = {};
+                            Object.entries(copiedActivity.grades || {}).forEach(([code, grade]) => {
+                                if (currentRecoveryCodes.has(code)) {
+                                    filteredGrades[code] = grade;
                                 }
+                            });
+
+                            if (Object.keys(filteredGrades).length > 0) {
+                                copiedActivity.grades = filteredGrades;
+                                // Reseteamos los flags de entregada/evaluada: el alumno
+                                // actual debe completar la actividad de nuevo.
+                                copiedActivity.delivered = false;
+                                copiedActivity.evaluated = false;
+                                this.currentStudent.activities.push(copiedActivity);
+                                copiedCount++;
+                            } else {
+                                skippedCount++;
                             }
                         });
-                        
+
                         if (copiedCount > 0) {
                             app.data.saveLocal();
                             this.renderActivities();
                             this.updateStudentSelectStyles();
-                            app.views.notify(`${copiedCount} actividad(es) copiada(s) correctamente`, "success");
+                            app.views.notify(
+                                copiedCount + ' actividad(es) copiada(s) correctamente'
+                                + (skippedCount > 0 ? ' (' + skippedCount + ' omitida(s) por no aportar criterios nuevos)' : ''),
+                                'success'
+                            );
                         } else {
-                            app.views.notify("No se pudieron copiar las actividades (criterios incompatibles o ya aprobados)", "warning");
+                            app.views.notify(
+                                'No se pudo copiar ninguna actividad: los criterios ya están cubiertos o no son recuperables para este alumno',
+                                'warning'
+                            );
                         }
-                        
+
                         this.closeCopyModal();
                     },
                     
-                    // NUEVA FUNCIÓN: Borrar todas las actividades de todos los alumnos
+                    // Borrar todas las actividades de todos los alumnos
                     deleteAllActivities: function() {
                         // Contar actividades totales
                         let totalActivities = 0;
@@ -4582,7 +4724,7 @@
                             act.date,
                             act.delivered ? "Sí" : "No",
                             act.evaluated ? "Sí" : "No",
-                            Object.keys(act.grades).join(", ")
+                            Object.keys(act.grades || {}).join(", ")
                         ]);
 
                         doc.autoTable({
@@ -4828,8 +4970,8 @@
                         list.innerHTML = '';
 
                         s.activities.forEach((act, idx) => {
-                            const critCount = Object.keys(act.grades).length;
-                            const critList = Object.keys(act.grades).join(', ');
+                            const critCount = Object.keys(act.grades || {}).length;
+                            const critList = Object.keys(act.grades || {}).join(', ');
                             const div = document.createElement('div');
                             div.className = 'flex items-center gap-2 text-sm p-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors';
                             div.innerHTML = `
@@ -4881,7 +5023,7 @@
                             const act = s.activities[actIdx];
 
                             // Si la tabla se desborda de la página, nueva página
-                            const critEntries = Object.entries(act.grades);
+                            const critEntries = Object.entries(act.grades || {});
                             const neededHeight = 20 + critEntries.length * 8 + 10;
                             if (yPos + neededHeight > 270) {
                                 doc.addPage();
