@@ -2387,20 +2387,19 @@
                     app.firebase.saveCourseData().catch(e => console.error('Error guardando en Firebase:', e));
                 },
                 loadLocal: function() {
-                    const raw = localStorage.getItem('recupData');
-                    if (raw) {
-                        try {
-                            const loaded = JSON.parse(raw);
-                            // Solo cargar datos de alumnos y cursos, NUNCA sobreescribir auth
-                            if (loaded.students) {
-                                app.state.students = (Array.isArray(loaded.students) ? loaded.students : [])
-                                    .map(app.utils.normalizeStudent)
-                                    .filter(Boolean);
-                            }
-                            if (loaded.courses) app.state.courses = loaded.courses;
-                            if (loaded.currentCourse) app.state.currentCourse = loaded.currentCourse;
-                        } catch(e) { console.error("Error loading local data"); }
-                    }
+                    try {
+                        const raw = localStorage.getItem('recupData');
+                        if (!raw) return;
+                        const loaded = JSON.parse(raw);
+                        // Solo cargar datos de alumnos y cursos, NUNCA sobreescribir auth
+                        if (loaded && Array.isArray(loaded.students)) {
+                            app.state.students = loaded.students
+                                .map(app.utils.normalizeStudent)
+                                .filter(Boolean);
+                        }
+                        if (loaded && Array.isArray(loaded.courses)) app.state.courses = loaded.courses;
+                        if (loaded && typeof loaded.currentCourse === 'string') app.state.currentCourse = loaded.currentCourse;
+                    } catch(e) { console.error('Error loading local data:', e); }
                 },
                 populateExportCourseSelect: async function() {
                     const select = document.getElementById('export-course-select');
@@ -2559,6 +2558,11 @@
                             const text = e.target.result;
                             const importedData = JSON.parse(text);
 
+                            // Los nombres de curso forman parte de rutas de Firebase.
+                            // Validarlos evita rutas malformadas en backups manipulados.
+                            const isValidCourse = course => typeof course === 'string' && /^\d{4}-\d{4}$/.test(course) &&
+                                Number(course.slice(5)) === Number(course.slice(0, 4)) + 1;
+
                             // Detectar tipo de archivo: BD completa o curso individual
                             if (importedData._type === 'full_backup' && importedData.courses) {
                                 // === BACKUP COMPLETO ===
@@ -2570,7 +2574,15 @@
                                 
                                 let totalImported = 0;
                                 for (const [courseYear, courseData] of Object.entries(importedData.courses)) {
+                                    if (!isValidCourse(courseYear)) {
+                                        console.warn('Curso ignorado por formato inválido:', courseYear);
+                                        continue;
+                                    }
                                     const students = courseData.students || [];
+                                    if (!Array.isArray(students)) {
+                                        console.warn('Alumnos ignorados por formato inválido en el curso:', courseYear);
+                                        continue;
+                                    }
                                     if (students.length > 0) {
                                         try {
                                             const encodedStudents = app.encodeFirebaseKeys(students);
@@ -2600,6 +2612,9 @@
                             // === CURSO INDIVIDUAL ===
                             let students = null;
                             let courseYear = importedData.course || app.state.currentCourse || app.firebase.getDefaultCourse();
+                            if (!isValidCourse(courseYear)) {
+                                return app.views.notify('El archivo contiene un curso con formato inválido', 'error');
+                            }
                             
                             // Formato v2: { students: [...], version: 2, course: '...' }
                             if (Array.isArray(importedData.students)) {
